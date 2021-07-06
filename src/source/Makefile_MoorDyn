@@ -1,0 +1,94 @@
+#MoorDyn+ v2.021 (24-05-2021)
+
+##Features of C++11 are used so gcc 4.9.2 is necessary: scl enable devtoolset-3 bash
+
+#=============== Compilation Options ===============
+USE_GCC5=NO
+USE_DEBUG=NO
+USE_FAST_MATH=YES
+USE_NATIVE_CPU_OPTIMIZATIONS=NO
+COMPILE_CHRONO=YES
+COMPILE_RZ_MLPISTONS=YES
+
+EXECNAME=TestMoorDyn_linux64
+EXECS_DIRECTORY=../../Run
+
+ifeq ($(USE_DEBUG), YES)
+  CCFLAGS=-c -O0 -g -Wall -static -static-libgcc -std=gnu++0x -DLINUX -fPIC
+else
+  CCFLAGS=-c -O3 -static -static-libgcc -std=gnu++0x -DLINUX -fPIC
+  ifeq ($(USE_FAST_MATH), YES)
+    CCFLAGS+= -ffast-math
+  endif
+  ifeq ($(USE_NATIVE_CPU_OPTIMIZATIONS), YES)
+    CCFLAGS+= -march=native
+  endif
+endif
+CC=g++
+CCLINKFLAGS=
+
+#Required for GCC versions >=5.0
+ifeq ($(USE_GCC5), YES)
+  CCFLAGS+=-D_GLIBCXX_USE_CXX11_ABI=0 
+  CCLINKFLAGS+=-D_GLIBCXX_USE_CXX11_ABI=0
+endif
+
+CCFLAGS+=-DDISABLE_DSPH -DDISABLE_NUMEXLIB  #Disable DSPH and JNumexLib
+
+CCFLAGS+=-ITools/
+
+#=============== Files to compile ===============
+DIRTOOLS=Tools/
+OBJTOOLS=$(DIRTOOLS)Functions.o $(DIRTOOLS)JException.o $(DIRTOOLS)JObject.o $(DIRTOOLS)JLog2.o $(DIRTOOLS)JSaveCsv2.o
+OBJXML=$(DIRTOOLS)JXml.o $(DIRTOOLS)tinystr.o $(DIRTOOLS)tinyxml.o $(DIRTOOLS)tinyxmlerror.o $(DIRTOOLS)tinyxmlparser.o
+OBJSMOORDYN=Main.o MoorDyn.o Body.o Connection.o Line.o Misc.o kiss_fft.o Environment.o DSphMoorDyn.o Output.o QSlines.o FunMoorDyn.o
+OBJECTS=$(OBJSMOORDYN) $(OBJTOOLS) $(OBJXML)
+
+#=============== CPU Code Compilation ===============
+all:$(EXECS_DIRECTORY)/$(EXECNAME)
+	rm -rf *.o Tools/*.o
+ifeq ($(USE_DEBUG), NO)
+	@echo "  --- Compiled Release CPU version ---"	
+else
+	@echo "  --- Compiled Debug CPU version ---"
+	mv $(EXECS_DIRECTORY)/$(EXECNAME) $(EXECNAME)_debug
+endif
+
+$(EXECS_DIRECTORY)/$(EXECNAME): $(OBJECTS)
+	$(CC) $(OBJECTS) $(CCLINKFLAGS) -o $@
+
+$(DIRTOOLS)Functions.o: $(DIRTOOLS)Functions.cpp
+	$(CC) $(CCFLAGS) $(DIRTOOLS)Functions.cpp -o $(DIRTOOLS)Functions.o
+
+$(DIRTOOLS)JException.o: $(DIRTOOLS)JException.cpp
+	$(CC) $(CCFLAGS) $(DIRTOOLS)JException.cpp -o $(DIRTOOLS)JException.o
+
+$(DIRTOOLS)JObject.o: $(DIRTOOLS)JObject.cpp
+	$(CC) $(CCFLAGS) $(DIRTOOLS)JObject.cpp -o $(DIRTOOLS)JObject.o
+
+$(DIRTOOLS)JXml.o: $(DIRTOOLS)JXml.cpp
+	$(CC) $(CCFLAGS) $(DIRTOOLS)JXml.cpp -o $(DIRTOOLS)JXml.o
+
+$(DIRTOOLS)JLog2.o: $(DIRTOOLS)JLog2.cpp
+	$(CC) $(CCFLAGS) $(DIRTOOLS)JLog2.cpp -o $(DIRTOOLS)JLog2.o
+
+$(DIRTOOLS)tinystr.o: $(DIRTOOLS)tinystr.cpp
+	$(CC) $(CCFLAGS) $(DIRTOOLS)tinystr.cpp -o $(DIRTOOLS)tinystr.o
+
+$(DIRTOOLS)tinyxml.o: $(DIRTOOLS)tinyxml.cpp
+	$(CC) $(CCFLAGS) $(DIRTOOLS)tinyxml.cpp -o $(DIRTOOLS)tinyxml.o
+
+$(DIRTOOLS)tinyxmlerror.o: $(DIRTOOLS)tinyxmlerror.cpp
+	$(CC) $(CCFLAGS) $(DIRTOOLS)tinyxmlerror.cpp -o $(DIRTOOLS)tinyxmlerror.o
+
+$(DIRTOOLS)tinyxmlparser.o: $(DIRTOOLS)tinyxmlparser.cpp
+	$(CC) $(CCFLAGS) $(DIRTOOLS)tinyxmlparser.cpp -o $(DIRTOOLS)tinyxmlparser.o
+
+$(DIRTOOLS)JSaveCsv2.o: $(DIRTOOLS)JSaveCsv2.cpp
+	$(CC) $(CCFLAGS) $(DIRTOOLS)JSaveCsv2.cpp -o $(DIRTOOLS)JSaveCsv2.o
+	
+.cpp.o: 
+	$(CC) $(CCFLAGS) -I./ $< 
+	
+clean:
+	rm -rf *.o Tools/*.o $(EXECNAME) $(EXECNAME)_debug

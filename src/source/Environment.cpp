@@ -27,9 +27,12 @@ You should have received a copy of the GNU General Public License along with
 MoorDyn+. If not, see <http://www.gnu.org/licenses/>.
 ===================================================================================*/
 
+/// \file Environment.cpp \brief Implements the class \ref Environment.
+
 #include "Environment.h"
 #include <cmath>        
 #include <cstdlib>
+
 //==============================================================================
 /// Constructor.
 //==============================================================================
@@ -44,38 +47,41 @@ Environment::Environment(JLog2 * log):Log(log) {
 Environment::~Environment() {
 	Reset();
 }
+
 //==============================================================================
 /// Initialization of variables.
 //==============================================================================
 void Environment::Reset() {
 	//g=TDouble3(0);
-	G=0.0;						// gravity
-	TimeMax=0.0;				// Time of simulation
-	WtrDpth=0.0;				// Water depth
-	Rho_w=0.0;					// density
-	Kb=0.0;       				// bottom stiffness (Pa/m)
-	Cb=0.0;       				// bottom damping   (Pa/m/s)
-	WaveKin=0;	 				// wave kinematics flag (0=off, >0=on)
-	WriteUnits=0;				// a global switch for whether to show the units line in the output files (1, default), or skip it (0)
-	FrictionCoefficient=0.0; 	// general bottom friction coefficient, as a start
-	FricDamp=0.0; 				// a damping coefficient used to model the friction at speeds near zero
-	StatDynFricScale=0.0; 		// a ratio of static to dynamic friction (=mu_static/mu_dynamic)
-	ICDfac=0.0; 				// factor by which to boost drag coefficients during dynamic relaxation IC generation
-	ICdt=0.0; 					// convergence analysis time step for IC generation
-	ICTmax=0.0; 				// max time for IC generation
-	ICthresh=0.0; 				// threshold for relative change in tensions to call it converged
-	DtM0=0.0;  					// value for desired mooring model time step
+	G=0.0; // gravity
+	TimeMax=0.0; // Time of simulation
+	WtrDpth=0.0; // Water depth
+	Rho_w=0.0; // density
+	Kb=0.0; // bottom stiffness (Pa/m)
+	Cb=0.0; // bottom damping   (Pa/m/s)
+	WaveKin=0; // wave kinematics flag (0=off, >0=on)
+	WriteUnits=0; // a global switch for whether to show the units line in the output files (1, default), or skip it (0)
+	FrictionCoefficient=0.0; // general bottom friction coefficient, as a start
+	FricDamp=0.0; // a damping coefficient used to model the friction at speeds near zero
+	StatDynFricScale=0.0; // a ratio of static to dynamic friction (=mu_static/mu_dynamic)
+	ICDfac=0.0; // factor by which to boost drag coefficients during dynamic relaxation IC generation
+	ICdt=0.0; // convergence analysis time step for IC generation
+	ICTmax=0.0; // max time for IC generation
+	ICthresh=0.0; // threshold for relative change in tensions to call it converged
+	DtM0=0.0; // value for desired mooring model time step
 	FreeSurface=0.0;
 
 }
+
 //==============================================================================
 /// Loads initial conditions of XML object.
 //==============================================================================
 void Environment::LoadXml(JXml *sxml, const std::string &place) {
 	TiXmlNode* node=sxml->GetNode(place, false);
-	if (!node)Run_Exceptioon("Cannot find the element \'" + place + "\'.");
+	if(!node)Run_Exceptioon("Cannot find the element \'" + place + "\'.");
 	ReadXml(sxml, node->ToElement());
 }
+
 //==============================================================================
 /// Reads list of initial conditions in the XML node.
 //==============================================================================
@@ -83,10 +89,15 @@ void Environment::ReadXml(JXml *sxml, TiXmlElement* lis) {
 	const char met[]="ReadXml";
 	//-Loads solverOptions zone.
 	TiXmlElement* ele=lis->FirstChildElement("solverOptions");
-	if (ele) { //Only one solverOptions
+	if(ele) { //Only one solverOptions
+#ifdef DISABLE_DSPH
+		sxml->CheckElementNames(ele,false,"gravity timeMax waterDepth kBot cBot waveKin writeUnits frictionCoefficient fricDamp statDynFricScale rho cdScaleIC dtIC tmaxIC threshIC dtM freesurface");
+		G=std::abs(sxml->ReadElementDouble(ele, "gravity", "value", true,9.81));
+		TimeMax=sxml->ReadElementDouble(ele, "timeMax", "value", true,UINT32_MAX);  // Time of simulation	
+#else
   		sxml->CheckElementNames(ele,false,"waterDepth kBot cBot waveKin writeUnits frictionCoefficient fricDamp statDynFricScale rho cdScaleIC dtIC tmaxIC threshIC dtM freesurface");
+#endif // DISABLE_DSPH
 
-		//G=std::abs(sxml->ReadElementDouble(ele, "gravity", "value", true,9.81));
 		WtrDpth=sxml->ReadElementDouble(ele, "waterDepth", "value", false);
 		Kb=sxml->ReadElementDouble(ele, "kBot", "value", true, 3.0e6);
 		Cb=sxml->ReadElementDouble(ele, "cBot", "value", true, 3.0e5);
@@ -105,15 +116,11 @@ void Environment::ReadXml(JXml *sxml, TiXmlElement* lis) {
 		ICTmax=sxml->ReadElementDouble(ele, "tmaxIC", "value", true, 0); // max time for IC generation
 		ICthresh=sxml->ReadElementDouble(ele, "threshIC", "value", true, 0.001); // threshold for relative change in tensions to call it converged
 		DtM0=sxml->ReadElementDouble(ele, "dtM", "value", true, 0.001);  // default value for desired mooring model time step		
-		//TimeMax=sxml->ReadElementDouble(ele, "timeMax", "value", true,UINT32_MAX);  // Time of simulation	
 		FreeSurface=sxml->ReadElementDouble(ele, "freesurface", "value", true, 0.0);// Water free surface
 		ele=ele->NextSiblingElement();
 	}
 }
-/// Sets the gravity
-void Environment::SetG(const tfloat3 g){
-	G=std::abs(g.z);
-}
+
 //==============================================================================
 /// Shows object configuration using Log.
 //==============================================================================

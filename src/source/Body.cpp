@@ -27,6 +27,8 @@ You should have received a copy of the GNU General Public License along with
 MoorDyn+. If not, see <http://www.gnu.org/licenses/>.
 ===================================================================================*/
 
+/// \file Body.cpp \brief Implements the class \ref Body.
+
 #include "Body.h"
 
 //==============================================================================
@@ -77,8 +79,8 @@ void Body::AllocateMemory() {
 void Body::LoadXml(JXml *sxml, const std::string &place, TiXmlElement* eleb, const unsigned numBody) {
 	std::string function="LoadXml";
 	TiXmlNode* node=sxml->GetNode(place, false);
-	if (!node)Run_Exceptioon("Cannot find the element \'" + place + "\'.");
-	if (!eleb)Run_Exceptioon("Cannot find the element \'" + place + "."+eleb->Value()+"\'.");	
+	if(!node)Run_Exceptioon("Cannot find the element \'" + place + "\'.");
+	if(!eleb)Run_Exceptioon("Cannot find the element \'" + place + "."+eleb->Value()+"\'.");	
 	ReadXml(sxml, place, eleb,  numBody);
 }
 
@@ -90,9 +92,9 @@ void Body::ReadXml(JXml *sxml, const std::string &place_in, TiXmlElement* eleBod
 	//PRINT: look the Number of Mooting tag
 	sxml->CheckElementNames(eleBody,false,"depth");
 
-	if (Debug) { printf("numBody - Body: %d\n", numBody); }
+	if(Debug) { printf("numBody - Body: %d\n", numBody); }
 
-	if (eleBody) { 
+	if(eleBody) { 
 		Number=numBody; //ID of mooring
 		Ref=sxml->GetAttributeInt(eleBody, "ref", true, Number); //If "ref" doesn't exist, stores Number value of creation
 		Depth=sxml->ReadElementDouble(eleBody, "depth", "value", true, DBL_MAX); //If depth doesn't exist, stores more later the WaterDepth of SolverOptions
@@ -104,9 +106,9 @@ void Body::ReadXml(JXml *sxml, const std::string &place_in, TiXmlElement* eleBod
 /// Returns a pointer of connections of this Body for type
 //==============================================================================
 Line * Body::GetLine(unsigned number) {
-	for (unsigned l=0; l<NLines; l++) {
+	for(unsigned l=0; l<NLines; l++) {
 		Line * line=Lines[l];
-		if (line->GetNumber() == number) { return line; }
+		if(line->GetNumber() == number) { return line; }
 	}
 	return NULL;
 }
@@ -114,7 +116,7 @@ Line * Body::GetLine(unsigned number) {
 //==========================================================================================
 /// Makes the setup for this Body. Initializes the Outptfile if exists this option in XML
 //==========================================================================================
-void Body::Setup(string * dir, Environment * env_in, std::vector<Line *> lines_in) {
+void Body::Setup(std::string &dir, Environment * env_in, std::vector<Line *> lines_in) {
 	std::string function="Setup";
 	AllocateMemory();
 	Env=env_in;

@@ -50,10 +50,12 @@ if not "%ERRORLEVEL%" == "0" goto fail
 
 :postprocessing
 set dirout2=%dirout%\floatinginfo
-%floatinginfo% -dirin %diroutdata% -onlymk:61 -savemotion -savedata %dirout2%/FloatingMotion 
+%floatinginfo% -dirin %diroutdata% -onlymk:60 -savemotion -savedata %dirout2%/FloatingMotion 
 if not "%ERRORLEVEL%" == "0" goto fail
 
 set dirout2=%dirout%\particles
+%partvtk% -dirin %diroutdata% -savevtk %dirout2%/PartFluid -onlytype:-all,+fluid 
+if not "%ERRORLEVEL%" == "0" goto fail
 %partvtk% -dirin %diroutdata% -savevtk %dirout2%/PartMoving -onlytype:-all,+moving 
 if not "%ERRORLEVEL%" == "0" goto fail
 %partvtk% -dirin %diroutdata% -savevtk %dirout2%/PartFloating -onlytype:-all,+floating 

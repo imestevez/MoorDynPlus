@@ -26,15 +26,16 @@ MoorDyn moordyn;
 //==============================================================================
 /// Initializes MoorDyn (returns true in case of error).
 //==============================================================================
-bool MoorDyn_LinesInit( const std::string filexml, const std::string nodexml, 
-                        const std::string dirout,  const unsigned numFt, 
-                        const unsigned ftmkbound[], const tdouble3 vellin[], 
-                        const tdouble3 velang[],const tfloat3 gravity) {
+bool MoorDyn_LinesInit(const std::string filexml,const std::string nodexml
+                      ,const std::string dirout,const unsigned numFt
+                      ,const unsigned ftmkbound[],const tdouble3 vellin[]
+                      ,const tdouble3 velang[],const tfloat3 gravity
+                      ,const double tmax,const double dtout) {
   // double pos[6]={center.x,center.y,center.z,angles.x,angles.y,angles.z};
   // double vel[6]={vellin.x,vellin.y,vellin.z,velang.x,velang.y,velang.z};
-  double pos[6] = { 0,0,0,0,0,0 };
-  double vel[6] = { 0,0,0,0,0,0 };
-  return (moordyn.LinesInit(pos, vel, filexml, nodexml, dirout.c_str(),gravity,ftmkbound, numFt) != 0);
+  double pos[6]={ 0,0,0,0,0,0 };
+  double vel[6]={ 0,0,0,0,0,0 };
+  return (moordyn.LinesInit(pos,vel,filexml,nodexml,dirout.c_str(),gravity,tmax,dtout,ftmkbound,numFt) != 0);
 }
 
 //==============================================================================
@@ -47,25 +48,25 @@ bool MoorDyn_LinesClose() {
 //==============================================================================
 /// Force calculation of moorings by MoorDyn (returns true in case of error).
 //==============================================================================
-bool MoorDyn_LinesCalc(const unsigned ftid, tdouble3 center, tdouble3 angles, tdouble3 vellin, tdouble3 velang, double t, double dt, tdouble3 &forcelin, tdouble3 &forceang) {
-  angles = TDouble3(0);
+bool MoorDyn_LinesCalc(const unsigned ftid,tdouble3 center,tdouble3 angles,tdouble3 vellin,tdouble3 velang,double t,double dt,tdouble3 &forcelin,tdouble3 &forceang) {
+  angles=TDouble3(0);
   //printf("LinesCalc_%u> time:%f  dt:%f \n",id,t,dt);
   //printf("LinesCalc_%u> center:(%f,%f,%f)  angles:(%f,%f,%f) \n",id,center.x,center.y,center.z,angles.x,angles.y,angles.z);
   //printf("LinesCalc_%u> fvel..:(%f,%f,%f)  fomega:(%f,%f,%f) \n",id,vellin.x,vellin.y,vellin.z,velang.x,velang.y,velang.z);
-  double pos[6] = { center.x,center.y,center.z,angles.x,angles.y,angles.z };
-  double vel[6] = { vellin.x,vellin.y,vellin.z,velang.x,velang.y,velang.z };
-  double flines[6] = { 0,0,0,0,0,0 };
-  bool error = false;//(LinesCalc(pos, vel, flines, &t, &dt) != 0);
-  forcelin = TDouble3(flines[0], flines[1], flines[2]);
-  forceang = TDouble3(flines[3], flines[4], flines[5]);
+  double pos[6]={ center.x,center.y,center.z,angles.x,angles.y,angles.z };
+  double vel[6]={ vellin.x,vellin.y,vellin.z,velang.x,velang.y,velang.z };
+  double flines[6]={ 0,0,0,0,0,0 };
+  bool error=false;//(LinesCalc(pos,vel,flines,&t,&dt) != 0);
+  forcelin=TDouble3(flines[0],flines[1],flines[2]);
+  forceang=TDouble3(flines[3],flines[4],flines[5]);
   return(error);
 }
 
 //==============================================================================
 /// Force calculation of moorings by MoorDyn (returns true in case of error).
 //==============================================================================
-bool MoorDyn_FairleadsCalc(const unsigned numFts, double*** fairpos, double*** fairvel, double*** fairforce, double t, double dt) {
-  bool error = (moordyn.FairleadsCalc(numFts, fairpos, fairvel, fairforce, &t, &dt) != 0);
+bool MoorDyn_FairleadsCalc(const unsigned numFts,double*** fairpos,double*** fairvel,double*** fairforce,double t,double dt) {
+  bool error=(moordyn.FairleadsCalc(numFts,fairpos,fairvel,fairforce,&t,&dt) != 0);
   return(error);
 }
 
@@ -100,25 +101,25 @@ unsigned MoorDyn_SegsCount(const unsigned line) {
 //==============================================================================
 /// Returns number of segments in indicated line. (line=0...)
 //==============================================================================
-unsigned MoorDyn_SegsCount(const unsigned ftid, const unsigned line) {
-  return (unsigned(moordyn.GetSegsCount(ftid, line)));
+unsigned MoorDyn_SegsCount(const unsigned ftid,const unsigned line) {
+  return (unsigned(moordyn.GetSegsCount(ftid,line)));
 }
 
 //==============================================================================
 /// Returns position of node. (line=0... node=0...)
 //==============================================================================
-tdouble3 MoorDyn_GetNodePos(const unsigned line, const unsigned node) {
+tdouble3 MoorDyn_GetNodePos(const unsigned line,const unsigned node) {
   double pos[3];
-  if (moordyn.GetNodePos(line, node, pos) == 0)return(TDouble3(pos[0], pos[1], pos[2]));
+  if(moordyn.GetNodePos(line,node,pos) == 0)return(TDouble3(pos[0],pos[1],pos[2]));
   return(TDouble3(0));
 }
 
 //==============================================================================
 /// Returns position of node. (line=0... node=0...)
 //==============================================================================
-tdouble3 MoorDyn_GetNodePosLink(const unsigned ftid, const unsigned line) {
+tdouble3 MoorDyn_GetNodePosLink(const unsigned ftid,const unsigned line) {
   double pos[3];
-  if (moordyn.GetNodePosLink(ftid, line, pos) == 0)return(TDouble3(pos[0], pos[1], pos[2]));
+  if(moordyn.GetNodePosLink(ftid,line,pos) == 0)return(TDouble3(pos[0],pos[1],pos[2]));
   return(TDouble3(0));
 }
 

@@ -50,7 +50,7 @@ if not "%ERRORLEVEL%" == "0" goto fail
 
 :postprocessing
 set dirout2=%dirout%\floatinginfo
-%floatinginfo% -dirin %diroutdata% -onlymk:61 -savemotion -savedata %dirout2%/FloatingMotion 
+%floatinginfo% -dirin %diroutdata% -onlymk:60 -savemotion -savedata %dirout2%/FloatingMotion 
 if not "%ERRORLEVEL%" == "0" goto fail
 
 set dirout2=%dirout%\particles

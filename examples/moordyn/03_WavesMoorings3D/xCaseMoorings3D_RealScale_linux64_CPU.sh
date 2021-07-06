@@ -1,10 +1,10 @@
-  #!/bin/bash 
-  
-  fail () { 
-    echo Execution aborted. 
-    read -n1 -r -p "Press any key to continue..." key 
-    exit 1 
-  }
+#!/bin/bash 
+
+fail () { 
+ echo Execution aborted. 
+ read -n1 -r -p "Press any key to continue..." key 
+ exit 1 
+}
 
 # "name" and "dirout" are named according to the testcase
 
@@ -59,10 +59,12 @@ fi
 
 if [ $option -eq 2 -o $option -eq 1 ]; then
 export dirout2=${dirout}/floatinginfo
-${floatinginfo} -dirin ${diroutdata} -onlymk:61 -savemotion -savedata ${dirout2}/FloatingMotion 
+${floatinginfo} -dirin ${diroutdata} -onlymk:60 -savemotion -savedata ${dirout2}/FloatingMotion 
 if [ $? -ne 0 ] ; then fail; fi
 
 export dirout2=${dirout}/particles
+${partvtk} -dirin ${diroutdata} -savevtk ${dirout2}/PartFluid -onlytype:-all,+fluid 
+if [ $? -ne 0 ] ; then fail; fi
 ${partvtk} -dirin ${diroutdata} -savevtk ${dirout2}/PartMoving -onlytype:-all,+moving 
 if [ $? -ne 0 ] ; then fail; fi
 ${partvtk} -dirin ${diroutdata} -savevtk ${dirout2}/PartFloating -onlytype:-all,+floating 

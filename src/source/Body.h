@@ -27,6 +27,8 @@ You should have received a copy of the GNU General Public License along with
 MoorDyn+. If not, see <http://www.gnu.org/licenses/>.
 ===================================================================================*/
 
+/// \file Body.h \brief Defines the class \ref Body.
+
 #ifndef _Body_
 #define _Body_
 
@@ -35,42 +37,42 @@ MoorDyn+. If not, see <http://www.gnu.org/licenses/>.
 #include "Environment.h"
 #include "Connection.h"
 #include "JObject.h"
-#include "Types_moordyn.h"
+#include "TypesMoorDyn.h"
 
 class Body : protected JObject
 {
 private:	
-	unsigned Ref;					///< Identifier of body introduced in xml file
-	unsigned Number; 				///< Identifier of body. Secuential by creation [0, 1, 2...]
-	unsigned NFairs;				///< Number of fairleads
-	unsigned NLines; 				///< Number of lines of this Body
-	std::vector<Line *> Lines; 		///< Vector of pointers to lines of this Body
-	std::vector<Connection *> Fairs;///< Vector of pointers to Fairs of its lines
-	double Depth; 					///< Stores the Depth of the water (m)
-	Environment * Env;				///< Pointer to environmental settings
+	unsigned Ref; ///< Identifier of body introduced in xml file
+	unsigned Number; ///< Identifier of body. Secuential by creation [0, 1, 2...]
+	unsigned NFairs; ///< Number of fairleads
+	unsigned NLines; ///< Number of lines of this Body
+	std::vector<Line *> Lines; ///< Vector of pointers to lines of this Body
+	std::vector<Connection *> Fairs; ///< Vector of pointers to Fairs of its lines
+	double Depth; ///< Stores the Depth of the water (m)
+	Environment * Env; ///< Pointer to environmental settings
 
-	void Reset();					/// Restores the attributes	
-	void AllocateMemory(); 			/// Reserves memory for arrays
-	void ReadXml(JXml *sxml, const std::string &place, TiXmlElement* eleb, const unsigned num_tag);/// Reads Xml file
+	void Reset(); /// Restores the attributes	
+	void AllocateMemory(); /// Reserves memory for arrays
+	void ReadXml(JXml *sxml, const std::string &place, TiXmlElement* eleb, const unsigned num_tag); /// Reads Xml file
 
 
 public:
-	Body();														/// Constructor
-	~Body();													/// Destructor
-	void LoadXml(JXml *sxml, const std::string &place, TiXmlElement* eleb, const unsigned num_tag);	/// Loads Xml file
-	void Setup(string * dir, Environment * env_in, std::vector<Line *> lines); /// Makes a setup of this Body
+	Body(); /// Constructor
+	~Body(); /// Destructor
+	void LoadXml(JXml *sxml, const std::string &place, TiXmlElement* eleb, const unsigned num_tag); /// Loads Xml file
+	void Setup(std::string &dir, Environment * env_in, std::vector<Line *> lines); /// Makes a setup of this Body
 	std::vector<Line *> GetLines() { return Lines; }			/// Returns a vector of Lines
-	unsigned GetNFairs() { return NFairs; };					/// Returns the number of Fairleads
-	unsigned GetNumber() { return Number; };					/// Returns the number of Body
-	unsigned GetNLines() { return NLines; };					/// Returns the number of Body
-	void SetNumber(const unsigned num) { Number=num; };			/// Stores the new number
-	unsigned GetRef() { return Ref; };							/// Returns the floating id of Body
-	unsigned * GetPtrRef() { return &Ref; };					/// Returns a pointer to floating id of Body
-	Line * GetLine(unsigned number);							/// Returns a pointer of a line selected
+	unsigned GetNFairs() { return NFairs; }; /// Returns the number of Fairleads
+	unsigned GetNumber() { return Number; }; /// Returns the number of Body
+	unsigned GetNLines() { return NLines; }; /// Returns the number of Body
+	void SetNumber(const unsigned num) { Number=num; }; /// Stores the new number
+	unsigned GetRef() { return Ref; }; /// Returns the floating id of Body
+	unsigned * GetPtrRef() { return &Ref; }; /// Returns a pointer to floating id of Body
+	Line * GetLine(unsigned number); /// Returns a pointer of a line selected
 	double * GetDepth() { return &Depth; }						/// Returns a pointer of the depth
 	void SetDepth(double value) { Depth=value; }				/// Sets depth value
 	unsigned GetFtMk() { return Ref; }							/// Returns the mk value
-	std::vector<Connection *> GetFairs(){return Fairs;}; 		/// Returns a pointer of connections of this body
+	std::vector<Connection *> GetFairs(){return Fairs;}; /// Returns a pointer of connections of this body
 	
 };
 

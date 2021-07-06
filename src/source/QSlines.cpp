@@ -27,6 +27,8 @@ You should have received a copy of the GNU General Public License along with
 MoorDyn+. If not, see <http://www.gnu.org/licenses/>.
 ===================================================================================*/
 
+/// \file QSlines.cpp \brief Implements the class \ref QSlines.
+
 #include "QSlines.h"
 
 //====================================================================================================
@@ -36,43 +38,42 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 	double* HFout, double* VFout, double* HAout, double* VAout, int Nnodes, vector<double> & s, 
 	vector<double> & X, vector<double> & Z, vector<double> & Te, const unsigned numLine)
 {																	// double s[10], double X[10], double Z[10], double Te[10])
-	if (longwinded == 1) cout << "In Catenary.  XF is " << XF << " and ZF is " << ZF << endl;
+	if(longwinded == 1) cout << "In Catenary.  XF is " << XF << " and ZF is " << ZF << endl;
 
 	double HF, VF, HA, VA;  // these are temporary and put to the pointers above with the "out" suffix
 
 	// ===================== input/output variables =========================
 
 	/*
-	double XF; // in - Horizontal distance between anchor and fairlead (meters)
-	double ZF;   // in - Vertical   distance between anchor and fairlead (meters)
-	double L;   // in - Unstretched length of line (meters)
-	double EA;  // in - Extensional stiffness of line (N)
-	double W;  // in - Weight of line in fluid per unit length (N/m)
-	double CB;  // in - Coefficient of seabed static friction drag (a negative value indicates no seabed) (-)
-	double Tol; // in - Convergence tolerance within Newton-Raphson iteration specified as a fraction of tension (-)
+	double XF; // in  - Horizontal distance between anchor and fairlead (meters)
+	double ZF; // in  - Vertical   distance between anchor and fairlead (meters)
+	double L;  // in  - Unstretched length of line (meters)
+	double EA; // in  - Extensional stiffness of line (N)
+	double W;  // in  - Weight of line in fluid per unit length (N/m)
+	double CB; // in  - Coefficient of seabed static friction drag (a negative value indicates no seabed) (-)
+	double Tol;// in  - Convergence tolerance within Newton-Raphson iteration specified as a fraction of tension (-)
 	double HF; // out - Effective horizontal tension in line at the fairlead (N)
 	double VF; // out - Effective vertical tension in line at the fairlead (N)
-	double HA;  // out - Effective horizontal tension in line at the anchor   (N)
-	double VA;  // out - Effective vertical   tension in line at the anchor   (N)
+	double HA; // out - Effective horizontal tension in line at the anchor   (N)
+	double VA; // out - Effective vertical   tension in line at the anchor   (N)
 
 	// can get rid of these node points???
 
-	int N = 10; // in - Number of nodes where the line position and tension can be output (-)
-	double s[N]; // in - Unstretched arc distance along line from anchor to each node where the line position and tension can be output (meters)
+	int N = 10;  // in  - Number of nodes where the line position and tension can be output (-)
+	double s[N]; // in  - Unstretched arc distance along line from anchor to each node where the line position and tension can be output (meters)
 	double X[N]; // out - Horizontal locations of each line node relative to the anchor (meters)
 	double Z[N]; // out - Vertical   locations of each line node relative to the anchor (meters)
-	double Te[N]; // out - Effective line tensions at each node (N)
+	double Te[N];// out - Effective line tensions at each node (N)
 	*/
 	std::string warningText = ""; ///< Stores the current warning to throw
 
 	double LMax; // Maximum stretched length of the line with seabed interaction beyond which the line would have to double-back on itself; here the line forms an "L" between the anchor and fairlead (i.e. it is horizontal along the seabed from the anchor, then vertical to the fairlead) (meters)
 
-	if (W > 0.0) { // .TRUE. when the line will sink in fluid
+	if(W > 0.0) { // .TRUE. when the line will sink in fluid
 		LMax = XF - EA / W + sqrt((EA / W)*(EA / W) + 2.0*ZF*EA / W); // Compute the maximum stretched length of the line with seabed interaction beyond which the line would have to double-back on itself; here the line forms an "L" between the anchor and fairlead (i.e. it is horizontal along the seabed from the anchor, then vertical to the fairlead)
-		if ((L >= LMax) && (CB >= 0.0)) {  // .TRUE. if the line is as long or longer than its maximum possible value with seabed interaction
-										   //cout << "\n   Warning from Catenary: Unstretched line length too large." << endl;
+		if((L >= LMax) && (CB >= 0.0)) {  // .TRUE. if the line is as long or longer than its maximum possible value with seabed interaction
 			Log->PrintfWarning("Warning from Catenary: Unstretched line length too large. Check Line %d.", numLine);
-			if (longwinded == 1) cout << "       d (horiz) is " << XF << " and h (vert) is " << ZF << " and L is " << L << endl;
+			if(longwinded == 1) cout << "       d (horiz) is " << XF << " and h (vert) is " << ZF << " and L is " << L << endl;
 			return -1;
 		}
 	}
@@ -125,7 +126,7 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 	XF2 = XF*XF;
 	ZF2 = ZF*ZF;
 
-	if (L <= sqrt(XF2 + ZF2)) { //.TRUE. if the current mooring line is taut
+	if(L <= sqrt(XF2 + ZF2)) { //.TRUE. if the current mooring line is taut
 		Lamda0 = 0.2;
 	}
 	else { //The current mooring line must be slack and not vertical
@@ -156,7 +157,7 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 
 	// Begin Newton-Raphson iteration:
 
-	for (int I = 1; I <= MaxIter; I++) {
+	for(int I = 1; I <= MaxIter; I++) {
 		// Initialize some commonly used terms that depend on HF and VF:
 		VFMinWL = VF - WL;
 		LMinVFOvrW = L - VF / W;
@@ -173,7 +174,7 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 		// Compute the error functions (to be zeroed) and the Jacobian matrix
 		//   (these depend on the anticipated configuration of the mooring line):
 
-		if ((CB < 0.0) || (W < 0.0) || (VFMinWL > 0.0)) { // .TRUE. when no portion of the line      rests on the seabed
+		if((CB < 0.0) || (W < 0.0) || (VFMinWL > 0.0)) { // .TRUE. when no portion of the line      rests on the seabed
 			EXF = (log(VFOvrHF + SQRT1VFOvrHF2) - log(VFMinWLOvrHF + SQRT1VFMinWLOvrHF2))*HFOvrW + LOvrEA* HF - XF;
 			EZF = (SQRT1VFOvrHF2 - SQRT1VFMinWLOvrHF2)*HFOvrW + LOvrEA*(VF - 0.5*WL) - ZF;
 			dXFdHF = (log(VFOvrHF + SQRT1VFOvrHF2) - log(VFMinWLOvrHF + SQRT1VFMinWLOvrHF2)) / W -
@@ -184,7 +185,7 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 			dZFdHF = (SQRT1VFOvrHF2 - SQRT1VFMinWLOvrHF2) / W - (VFOvrHF2 / SQRT1VFOvrHF2 - VFMinWLOvrHF2 / SQRT1VFMinWLOvrHF2) / W;
 			dZFdVF = (VFOvrHF / SQRT1VFOvrHF2 - VFMinWLOvrHF / SQRT1VFMinWLOvrHF2) / W + LOvrEA;
 		}
-		else if (-CB*VFMinWL < HF) { // .TRUE. when a portion of the line rests on the seabed and the anchor tension is nonzero
+		else if(-CB*VFMinWL < HF) { // .TRUE. when a portion of the line rests on the seabed and the anchor tension is nonzero
 			EXF = log(VFOvrHF + SQRT1VFOvrHF2) *HFOvrW - 0.5*CBOvrEA*W* LMinVFOvrW*LMinVFOvrW + LOvrEA* HF + LMinVFOvrW - XF;
 			EZF = (SQRT1VFOvrHF2 - 1.0)*HFOvrW + 0.5*VF*VFOvrWEA - ZF;
 
@@ -219,12 +220,12 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 		// Check if we have converged on a solution, or restart the iteration, or
 		//   Abort if we cannot find a solution:
 
-		if ((abs(dHF) <= abs(Tol*HF)) && (abs(dVF) <= abs(Tol*VF))) { // .TRUE. if we have converged; stop iterating! [The converge tolerance, Tol, is a fraction of tension]
+		if((abs(dHF) <= abs(Tol*HF)) && (abs(dVF) <= abs(Tol*VF))) { // .TRUE. if we have converged; stop iterating! [The converge tolerance, Tol, is a fraction of tension]
 			 //cout << "converged" << endl;
 			break;
 		}
 
-		else if ((I == MaxIter) && (FirstIter)) {  // .TRUE. if we've iterated MaxIter-times for the first time, try a new set of ICs;
+		else if((I == MaxIter) && (FirstIter)) {  // .TRUE. if we've iterated MaxIter-times for the first time, try a new set of ICs;
 			/*  ! Perhaps we failed to converge because our initial guess was too far off.
 			!   (This could happen, for example, while linearizing a model via large
 			!   pertubations in the DOFs.)  Instead, use starting values documented in:
@@ -237,7 +238,7 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 			XF2 = XF*XF;
 			ZF2 = ZF*ZF;
 
-			if (L <= sqrt(XF2 + ZF2)) { //.TRUE. if the current mooring line is taut
+			if(L <= sqrt(XF2 + ZF2)) { //.TRUE. if the current mooring line is taut
 				Lamda0 = 0.2;
 			}
 			else { //The current mooring line must be slack and not vertical
@@ -254,7 +255,7 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 			dVF = 0.0;
 		}
 
-		else if ((I == MaxIter) && (!FirstIter)) { // .TRUE. if we've iterated as much as we can take without finding a solution; Abort
+		else if((I == MaxIter) && (!FirstIter)) { // .TRUE. if we've iterated as much as we can take without finding a solution; Abort
 			Log->PrintfWarning("Warning from Catenary:: Iteration not convergent. Cannot solve quasi-static mooring line solution. Check Line %d.", numLine);
 			return -1;
 		}
@@ -271,13 +272,13 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 	!   at each node (again, these depend on the configuration of the mooring
 	!   line): */
 
-	if ((CB < 0.0) || (W < 0.0) || (VFMinWL > 0.0)) { // .TRUE. when no portion of the line rests on the seabed
+	if((CB < 0.0) || (W < 0.0) || (VFMinWL > 0.0)) { // .TRUE. when no portion of the line rests on the seabed
 													  // Anchor tensions:
 		HA = HF;
 		VA = VFMinWL;
 		//! Line position and tension at each node:
-		for (int I = 0; I < Nnodes; I++) { // Loop through all nodes where the line position and tension are to be computed
-			if ((s[I] < 0.0) || (s[I] > L)) {
+		for(int I = 0; I < Nnodes; I++) { // Loop through all nodes where the line position and tension are to be computed
+			if((s[I] < 0.0) || (s[I] > L)) {
 				Log->PrintfWarning("Warning from Catenary:: All line nodes must be located between the anchor and fairlead (inclusive) in routine Catenary(). Check Line %d.", numLine);
 				//cout << "        s[I] = " << s[I] << " and L = " << L << endl;
 				return -1;
@@ -293,14 +294,14 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 			Te[I] = sqrt(HF*HF + VFMinWLs*VFMinWLs);
 		}
 	}
-	else if (-CB*VFMinWL < HF) { // .TRUE. when a portion of the line rests on the seabed and the anchor tension is nonzero
+	else if(-CB*VFMinWL < HF) { // .TRUE. when a portion of the line rests on the seabed and the anchor tension is nonzero
 								 // Anchor tensions:
 		HA = HF + CB*VFMinWL;
 		VA = 0.0;
 
 		// Line position and tension at each node:
-		for (int I = 0; I < Nnodes; I++) {  // Loop through all nodes where the line position and tension are to be computed
-			if ((s[I] < 0.0) || (s[I] > L)) {
+		for(int I = 0; I < Nnodes; I++) {  // Loop through all nodes where the line position and tension are to be computed
+			if((s[I] < 0.0) || (s[I] > L)) {
 				Log->PrintfWarning("Warning from Catenary:: All line nodes must be located between the anchor and fairlead (inclusive) in routine Catenary(). Check Line %d.", numLine);
 				//cout << "        s[I] = " << s[I] << " and L = " << L << endl;
 				return -1;
@@ -312,7 +313,7 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 			sOvrEA = s[I] / EA; // ! that depend
 			SQRT1VFMinWLsOvrHF2 = sqrt(1.0 + VFMinWLsOvrHF*VFMinWLsOvrHF); // ! on s[I]
 
-			if (s[I] <= LMinVFOvrW) { // .TRUE. if this node rests on the seabed and the tension is nonzero
+			if(s[I] <= LMinVFOvrW) { // .TRUE. if this node rests on the seabed and the tension is nonzero
 				X[I] = s[I] + sOvrEA*(HF + CB*VFMinWL + 0.5*Ws*CB);
 				Z[I] = 0.0;
 				Te[I] = HF + CB*VFMinWLs;
@@ -329,8 +330,8 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 		HA = 0.0;
 		VA = 0.0;
 		// Line position and tension at each node:
-		for (int I = 0; I < Nnodes; I++) {  // Loop through all nodes where the line position and tension are to be computed
-			if ((s[I] < 0.0) || (s[I] > L)) {
+		for(int I = 0; I < Nnodes; I++) {  // Loop through all nodes where the line position and tension are to be computed
+			if((s[I] < 0.0) || (s[I] > L)) {
 				Log->PrintfWarning("Warning from Catenary:: All line nodes must be located between the anchor and fairlead (inclusive) in routine Catenary(). Check Line %d.", numLine);
 				cout << "        s[I] = " << s[I] << " and L = " << L << endl;
 				return -1;
@@ -341,12 +342,12 @@ int QSlines::Catenary(double XF, double ZF, double L, double EA, double W, doubl
 			sOvrEA = s[I] / EA; // that depend
 			SQRT1VFMinWLsOvrHF2 = sqrt(1.0 + VFMinWLsOvrHF*VFMinWLsOvrHF); // on s[I]
 
-			if (s[I] <= LMinVFOvrW - HFOvrW / CB) { // .TRUE. if this node rests on the seabed and the tension is zero
+			if(s[I] <= LMinVFOvrW - HFOvrW / CB) { // .TRUE. if this node rests on the seabed and the tension is zero
 				X[I] = s[I];
 				Z[I] = 0.0;
 				Te[I] = 0.0;
 			}
-			else if (s[I] <= LMinVFOvrW) { // .TRUE. if this node rests on the seabed and the tension is nonzero
+			else if(s[I] <= LMinVFOvrW) { // .TRUE. if this node rests on the seabed and the tension is nonzero
 				X[I] = s[I] - (LMinVFOvrW - 0.5*HFOvrW / CB)*HF / EA + sOvrEA*(HF + CB*VFMinWL + 0.5*Ws*CB) + 0.5*CB*VFMinWL*VFMinWL / WEA;
 				Z[I] = 0.0;
 				Te[I] = HF + CB*VFMinWLs;

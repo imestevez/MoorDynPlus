@@ -1,10 +1,10 @@
-  #!/bin/bash 
-  
-  fail () { 
-    echo Execution aborted. 
-    read -n1 -r -p "Press any key to continue..." key 
-    exit 1 
-  }
+#!/bin/bash 
+
+fail () { 
+ echo Execution aborted. 
+ read -n1 -r -p "Press any key to continue..." key 
+ exit 1 
+}
 
 # "name" and "dirout" are named according to the testcase
 

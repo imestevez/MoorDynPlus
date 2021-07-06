@@ -27,8 +27,10 @@ You should have received a copy of the GNU General Public License along with
 MoorDyn+. If not, see <http://www.gnu.org/licenses/>.
 ===================================================================================*/
 
-#ifndef MISC_H
-#define MISC_H
+/// \file Misc.h \brief Defines the class \ref Misc.
+
+#ifndef _Misc_
+#define _Misc_
 
 #ifndef LINUX
 #define LINUX
@@ -72,39 +74,35 @@ MoorDyn+. If not, see <http://www.gnu.org/licenses/>.
 
 
 // from Iñaki Zabala
+namespace misc{
+
 #ifdef _MSC_VER
 template<typename T> static inline T round(T val) { return floor(val + 0.5); }
 #endif
 
-using namespace std;
+typedef std::complex<double> doubleC; ///< Make shorthand for complex double type
+typedef std::complex<float>  floatC;  ///< Make shorthand for complex float type
 
-typedef complex<double> doubleC;	///< Make shorthand for complex double type
-typedef complex<float> floatC; 		///< Make shorthand for complex float type
 
-const double pi = 3.14159265;
-
-const doubleC i1(0., 1.); 			///< Set imaginary number 1
-const floatC i1f(0., 1.); 			///< Set imaginary number 1
-const int wordy = 0;   				///< Flag to enable excessive output if is greater than 0 for troubleshooting
+const doubleC i1(0.,1.); ///< Set imaginary number 1
+const floatC i1f(0.,1.); ///< Set imaginary number 1
+const int wordy=0; ///< Flag to enable excessive output if is greater than 0 for troubleshooting
 
 // below are function prototypes for misc functions
 
-double eye(int I, int J);															/// simple convenience function for identity matrix
-void unitvector(vector< double > & u, vector< double > & r1, vector< double > & r2);/// Returns unit vector (u) in direction from r1 to r2
-void inverse3by3(vector< vector< double > > & minv, vector< vector< double > > & m);/// Computes the inverse of a matrix m
-void RotMat(double x1, double x2, double x3, double TransMat[]);					/// Creates rotation matrix  (row major order?)
-double dotprod(vector<double>& A, vector<double>& B);								/// Computes dot product and returns it
-double dotprod(double A[], vector<double>& B);										/// Computes dot product and returns it
-// calculate wave number from frequency, g, and depth (credit: FAST source)
-float WaveNumber(float Omega, float g, float h);									/// Calculates wave number from frequency, g, and depth (credit: FAST source)
-float JONSWAP(float Omega, float Hs, float Tp, float Gamma);						/// Compute the JONSWAP wave spectrum
-float SINHNumOvrSIHNDen(float k, float h, float z);									/// Computes the hyperbolic numerator over denominator
-float COSHNumOvrSIHNDen(float k, float h, float z);									/// Computes the hyperbolic numerator over denominator
-void reverse(double* data, int datasize);											/// Flip or reverse function
-void doIIR(double* in, double* out, int dataSize, double* a, double* b, int kernelSize);/// IIR filter function
-void doSSfilter(double* in, double* out, int dataSize, double* a, double* beta, double b0, int kernelSize);/// State Space filter function - a good reference is https://ccrma.stanford.edu/~jos/fp/Converting_State_Space_Form_Hand.html
-double** make2Darray(int arraySizeX, int arraySizeY);								/// 2D double array creation and destruction functions
-void free2Darray(double** theArray, int arraySizeX);								/// Frees 2D arrays
-
-
-#endif
+double eye(int I,int J); /// simple convenience function for identity matrix
+void unitvector(std::vector<double> & u,std::vector<double> & r1,std::vector<double> & r2); /// Returns unit vector (u) in direction from r1 to r2
+void inverse3by3(std::vector<std::vector<double>> & minv,std::vector<std::vector<double>> & m); /// Computes the inverse of a matrix m
+void RotMat(double x1,double x2,double x3,double TransMat[]); /// Creates rotation matrix  (row major order?)
+double dotprod(std::vector<double>& A,std::vector<double>& B); /// Computes dot product and returns it
+double dotprod(double A[],std::vector<double>& B); /// Computes dot product and returns it
+// calculate wave number from frequency,g,and depth (credit: FAST source)
+float WaveNumber(float Omega,float g,float h); /// Calculates wave number from frequency,g,and depth (credit: FAST source)
+float JONSWAP(float Omega,float Hs,float Tp,float Gamma); /// Compute the JONSWAP wave spectrum
+float SINHNumOvrSIHNDen(float k,float h,float z); /// Computes the hyperbolic numerator over denominator
+float COSHNumOvrSIHNDen(float k,float h,float z); /// Computes the hyperbolic numerator over denominator
+void reverse(double* data,int datasize); /// Flip or reverse function
+void doIIR(double* in,double* out,int dataSize,double* a,double* b,int kernelSize); /// IIR filter function
+void doSSfilter(double* in,double* out,int dataSize,double* a,double* beta,double b0,int kernelSize); /// State Space filter function - a good reference is https://ccrma.stanford.edu/~jos/fp/Converting_State_Space_Form_Hand.html
+};
+#endif //!Misc

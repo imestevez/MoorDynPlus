@@ -21,7 +21,7 @@
 //:# =========
 //:# - Nuevo metodo ReadElementStr() para leer un atributo string de un elemento
 //:#   directamente. (14-10-2010)
-//:# - En metodos con datos int3, float3 y double3 se añadio la opcion de 
+//:# - En metodos con datos int3, float3 y double3 se anhadio la opcion de 
 //:#   indicar el nombre de los atributos (por defecto son x,y,z). (02-05-2011)
 //:# - Nuevo metodo ReadElementInt3(). (26-10-2011)
 //:# - Traduccion de comentarios al ingles. (10-02-2012)
@@ -47,6 +47,10 @@
 //:# - Permite la evaluacion automatica tambien de variables de texto con JNumex. (08-03-2020)
 //:# - Nuevos metodos GetAttributeStrSimple() y ReadElementStrSimple(). (08-03-2020)
 //:# - Nuevos metodos CheckElementActive() y  CheckNodeActive(). (18-03-2020)
+//:# - Mejora la gestion de excepciones. (06-05-2020)
+//:# - Nuevos metodos CheckAttributes(elementname) y ExistsElement(elementname,attribute). (27-08-2020)
+//:# - Mejora en CheckElementActive(lis,name). Ahora devuelve false cuando no existe name. (03-09-2020)
+//:# - Usa GetDateTime() de Functions.h ya que actualmente esa cabecera esta incluida. (20-11-2020)
 //:#############################################################################
 
 /// \file JXml.h \brief Declares the class \ref JXml.
@@ -90,11 +94,6 @@ public:
 #else
   void SetNuxLib(JNumx* nux){ NuxLib=nux; }
 #endif
-
-  //==============================================================================
-  /// Returns date and time of the system in text format (dd-mm-yyyy hh:mm:ss)
-  //==============================================================================
-  static std::string GetDateTime();
 
   //==============================================================================
   /// Returns the requested node and creates it if necessary.
@@ -195,6 +194,17 @@ public:
   bool ExistsElement(const TiXmlElement* ele,const std::string &name)const{ return(ele->FirstChildElement(name.c_str())!=NULL); }
 
   //==============================================================================
+  /// Checks if the requested element and attribute already exists.
+  /// \param ele Xml element of the error.
+  /// \param name Name of the requested element.
+  /// \param attrib Name of the requested attribute.
+  //==============================================================================
+  bool ExistsElement(const TiXmlElement* ele,const std::string &name,const std::string &attrib)const{ 
+    const TiXmlElement* ele2=ele->FirstChildElement(name.c_str());
+    return(ele2!=NULL && ExistsAttribute(ele2,attrib)); 
+  }
+
+  //==============================================================================
   /// Returns the number of elements with a requested name of a node TiXmlNode.
   /// \param node Xml node where the reach is performed.
   /// \param name Name of filtered elements (no filter using "").
@@ -202,9 +212,9 @@ public:
   unsigned CountElements(const TiXmlNode* node,const std::string &name)const;
 
   //==============================================================================
-  /// Returns true when element is not deactivated.
-  /// \param lis Xml element to look for requesed element name.
-  /// \param name Element name to look for.
+/// Returns true when element is valid and it is not deactivated.
+/// \param lis Xml element to look for requesed element name.
+/// \param name Element name to look for.
   //==============================================================================
   bool CheckElementActive(const TiXmlElement* lis,const std::string &name)const;
 
@@ -273,6 +283,16 @@ public:
   //==============================================================================
   int CheckAttributes(const TiXmlElement* ele,std::string names,bool checkmanyatt)const;
 
+  //==============================================================================
+  /// Checks if some or several attributes appers in the element. Returns number
+  /// of found attribute (1...n), 0 none found and -1 several found.
+  /// \param lis List of Xml elements of the error.
+  /// \param elementname Name of the requested element.
+  /// \param names Names of the requested attributes separated by spaces.
+  /// \param checkmanyatt Throw exception if several attributes exist.
+  //==============================================================================
+  int CheckAttributes(const TiXmlElement* lis,std::string elementname
+    ,std::string names,bool checkmanyatt)const;
 
   //-Reading attributes of the element.
 

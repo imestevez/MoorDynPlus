@@ -83,6 +83,13 @@
 //:# - Nueva funcion CompareVersions().  (08-12-2019)
 //:# - Error corregido en StrStripSlashes().  (04-01-2020)
 //:# - Nueva funcion VectorFindMask().  (17-03-2020)
+//:# - Nueva funcion NaturalFmt().  (15-04-2020)
+//:# - Nuevas funciones NewToTFloat3() y NewToTDouble3().  (09-05-2020)
+//:# - Nueva funcion FileModifTime().  (02-06-2020)
+//:# - Nueva funcion Length() para vectores.  (27-06-2020)
+//:# - Nueva funcion VectorLower().  (09-09-2020)
+//:# - Nueva funcion GetFirstTextBetween().  (20-09-2020)
+//:# - Nuevas funciones RealStr() y uso en VarStr().  (13-02-2021)
 //:#############################################################################
 
 /// \file Functions.h \brief Declares basic/general functions for the entire application.
@@ -95,14 +102,8 @@
 #include <vector>
 #include <sys/stat.h>
 #include "TypesDef.h"
+#include "RunExceptionDef.h"
 
-
-#ifndef Run_ExceptioonFun
-#define Run_ExceptioonFun(msg) RunExceptioonFun(__FILE__,__LINE__,__func__,msg)
-#endif
-#ifndef Run_ExceptioonFileFun
-#define Run_ExceptioonFileFun(msg,file) RunExceptioonFun(__FILE__,__LINE__,__func__,msg,file)
-#endif
 
 /// Implements a set of basic/general functions.
 namespace fun{
@@ -129,6 +130,11 @@ std::string PrintStr(const char *format,...);
 
 std::string PrintStrCsv(bool csvsepcoma,const char *format,...);
 std::string StrCsvSep(bool csvsepcoma,const std::string &cad);
+
+std::string NaturalFmt(double v,unsigned ndigits,bool removezeros);
+std::string RealStr(double v,unsigned ndigits,bool removezeros);
+inline std::string RealStr(float  v){ return(RealStr(v, 7,true)); }
+inline std::string RealStr(double v){ return(RealStr(v,16,true)); }
 
 std::string IntStrFill(int v,int vmax);
 std::string UintStrFill(unsigned v,unsigned vmax,const char fillchar='0');
@@ -214,13 +220,16 @@ std::string StrSplitValue(const std::string mark,std::string text,unsigned value
 unsigned VectorSplitStr(const std::string mark,const std::string &text,std::vector<std::string> &vec);
 unsigned VectorSplitInt(const std::string mark,const std::string &text,std::vector<int> &vec);
 unsigned VectorSplitDouble(const std::string mark,const std::string &text,std::vector<double> &vec);
+unsigned VectorSplitFloat(const std::string mark,const std::string &text,std::vector<float> &vec);
+void     VectorLower(std::vector<std::string> &vec);
 unsigned VectorFind(const std::string &key,const std::vector<std::string> &vec,unsigned first=0);
 unsigned VectorFindMask(const std::string &keymask,const std::vector<std::string> &vec,unsigned first=0);
 
 double GetFirstValueDouble(std::string tex,std::string pretex="");
-double GetFirstValueDouble(std::string tex,std::string &endtex,std::string pretex);
+double GetFirstValueDouble(std::string tex,std::string &resttex,std::string pretex);
 int GetFirstValueInt(std::string tex,std::string pretex="");
-int GetFirstValueInt(std::string tex,std::string &endtex,std::string pretex);
+int GetFirstValueInt(std::string tex,std::string &resttex,std::string pretex);
+std::string GetFirstTextBetween(std::string tex,std::string &resttex,std::string pretex,std::string endtex);
 
 int CompareVersions(std::string v1,std::string v2);
 
@@ -234,11 +243,17 @@ std::string VarStr(const std::string &name,bool value);
 std::string VarStr(const std::string &name,int value);
 std::string VarStr(const std::string &name,unsigned value);
 
-std::string VarStr(const std::string &name,unsigned n,const int* values,std::string size="?");
-std::string VarStr(const std::string &name,unsigned n,const unsigned* values,std::string size="?");
-std::string VarStr(const std::string &name,unsigned n,const word* values,std::string size="?");
-std::string VarStr(const std::string &name,unsigned n,const float* values,std::string size="?",const char* fmt="%f");
-std::string VarStr(const std::string &name,unsigned n,const double* values,std::string size="?",const char* fmt="%f");
+std::string VarStr(const std::string &name,unsigned n,const int *values,std::string size="?");
+std::string VarStr(const std::string &name,unsigned n,const unsigned *values,std::string size="?");
+std::string VarStr(const std::string &name,unsigned n,const word *values,std::string size="?");
+std::string VarStr(const std::string &name,unsigned n,const float *values,std::string size="?",const char *fmt="%f");
+std::string VarStr(const std::string &name,unsigned n,const double *values,std::string size="?",const char *fmt="%f");
+std::string VarStr(const std::string &name,unsigned n,const tdouble3 *values,std::string size="?",const char *fmt="%g");
+
+std::string VarStr(const std::string &name,const std::vector<int> &values,std::string size="?");
+std::string VarStr(const std::string &name,const std::vector<tdouble3> &values,std::string size="?",const char *fmt="%g");
+
+
 
 void PrintVar(const std::string &name,const char *value,const std::string &post="");
 void PrintVar(const std::string &name,const std::string &value,const std::string &post="");
@@ -266,6 +281,7 @@ std::string JSONObject(const std::vector<std::string> &properties);
 std::string JSONArray(const std::vector<std::string> &values);
 
 int FileType(const std::string &name);
+ullong FileModifTime(const std::string &name);
 inline bool FileExists(const std::string &name){ return(FileType(name)==2); }
 inline bool DirExists(const std::string &name){ return(FileType(name)==1); }
 llong FileSize(const std::string &name);
@@ -317,6 +333,12 @@ double*   ResizeAlloc(double   *data,unsigned ndata,unsigned newsize);
 tdouble2* ResizeAlloc(tdouble2 *data,unsigned ndata,unsigned newsize);
 tdouble3* ResizeAlloc(tdouble3 *data,unsigned ndata,unsigned newsize);
 tdouble4* ResizeAlloc(tdouble4 *data,unsigned ndata,unsigned newsize);
+
+tfloat3*  NewToTFloat3 (const tdouble3* data,unsigned ndata);
+tdouble3* NewToTDouble3(const tfloat3* data,unsigned ndata);
+
+float  Length(const tfloat3 &v);
+double Length(const tdouble3 &v);
 
 bool IsInfinity(float v);
 bool IsInfinity(double v);

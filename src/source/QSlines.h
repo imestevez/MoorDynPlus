@@ -27,6 +27,12 @@ You should have received a copy of the GNU General Public License along with
 MoorDyn+. If not, see <http://www.gnu.org/licenses/>.
 ===================================================================================*/
 
+/// \file QSlines.h \brief Defines the class \ref QSlines.
+
+
+#ifndef _QSlines_
+#define _QSlines_
+
 #include <vector>
 #include <cmath>
 #include <stdio.h>
@@ -45,8 +51,9 @@ public:
 	QSlines(JLog2 * log):Log(log){}; /// Constructor
 	int Catenary(double XF, double ZF, double L, double EA, double W, double CB, double Tol,
 		double* HFout, double* VFout, double* HAout, double* VAout, int Nnodes, vector<double> & s, 
-		vector<double> & X, vector<double> & Z, vector<double> & Te, const unsigned numLine);/// This function return the positions and tensions of a single mooring line
+		vector<double> & X, vector<double> & Z, vector<double> & Te, const unsigned numLine); /// This function return the positions and tensions of a single mooring line
 private:
 	static const int longwinded=0;	///< Switch to turn on excessive output for locating crashes
-	JLog2 * Log;					///< Shows and stores messages
+	JLog2 * Log; ///< Shows and stores messages
 };
+#endif //!QSlines
