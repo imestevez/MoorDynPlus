@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="..\source\Tools\JException.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\JLog2.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\JObject.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\JXml.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\tinystr.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\tinyxml.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\TypesDef.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\RunExceptionDef.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\JSaveCsv2.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\JNumexLibDef.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\JVtkLib.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\JVtkLibDef.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\FunGeo3d.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\JRangeFilter.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\FunctionsMath.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Tools\JDataArrays.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\_kiss_fft_guts.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\kissfft.hh">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\kiss_fft.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Types_moordyn.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\Misc.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IApi.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\MoorDynPlus.h" />
+    <ClInclude Include="..\source\FunMoorDynPlus.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\IBody.h" />
+    <ClInclude Include="..\source\IConnection.h" />
+    <ClInclude Include="..\source\DSphMoorDynPlus.h" />
+    <ClInclude Include="..\source\IEnvironment.h" />
+    <ClInclude Include="..\source\Line.h" />
+    <ClInclude Include="..\source\IOutput.h" />
+    <ClInclude Include="..\source\IQSlines.h" />
+    <ClInclude Include="..\source\Tools\Functions.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{dbee713f-f057-4063-ad24-6f88f96c27e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{3411f5a5-e665-467b-a4a4-f3542d05791f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\ILine.cpp" />
+    <ClCompile Include="..\source\Tools\Functions.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\JException.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\JLog2.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\JObject.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\JXml.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\tinystr.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\tinyxml.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\tinyxmlerror.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\tinyxmlparser.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\JSaveCsv2.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\JRangeFilter.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\FunGeo3d.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Tools\JDataArrays.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\kiss_fft.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\Misc.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\MoorDynPlus.cpp" />
+    <ClCompile Include="..\source\FunMoorDynPlus.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\IBody.cpp" />
+    <ClCompile Include="..\source\IConnection.cpp" />
+    <ClCompile Include="..\source\DSphMoorDynPlus.cpp" />
+    <ClCompile Include="..\source\IEnvironment.cpp" />
+    <ClCompile Include="..\source\IOutput.cpp" />
+    <ClCompile Include="..\source\IQSlines.cpp" />
+  </ItemGroup>
+</Project>

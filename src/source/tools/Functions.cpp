@@ -1,6 +1,6 @@
 //HEAD_DSCODES
 /*
- <DUALSPHYSICS>  Copyright (c) 2020 by Dr Jose M. Dominguez et al. (see http://dual.sphysics.org/index.php/developers/). 
+ <DUALSPHYSICS>  Copyright (c) 2025 by Dr Jose M. Dominguez et al. (see http://dual.sphysics.org/index.php/developers/). 
 
  EPHYSLAB Environmental Physics Laboratory, Universidade de Vigo, Ourense, Spain.
  School of Mechanical, Aerospace and Civil Engineering, University of Manchester, Manchester, U.K.
@@ -48,10 +48,10 @@ namespace fun{
 //==============================================================================
 /// Throws an exception related to a file or not.
 //==============================================================================
-void RunExceptioonFun(const std::string &srcfile,int srcline,const std::string &fun
-  ,const std::string &msg,const std::string &file)
+void RunExceptioonFun(const std::string& srcfile,int srcline
+  ,const std::string& fun,const std::string& msg,const std::string& file)
 { // fun::RunExceptioonFun(__FILE__,__LINE__,__func__,"msg");
-  std::string tx;
+  string tx;
   tx=fun::PrintStr("\n*** Exception (%s::%s:%d)\n",GetPathLevels(srcfile,3).c_str(),fun.c_str(),srcline);
   if(!msg.empty())tx=tx+fun::PrintStr("Text: %s\n",msg.c_str());
   if(!file.empty())tx=tx+fun::PrintStr("File: %s\n",file.c_str());
@@ -61,13 +61,67 @@ void RunExceptioonFun(const std::string &srcfile,int srcline,const std::string &
 }
 
 //==============================================================================
+/// Returns host name or empty string when it is unknown.
+//==============================================================================
+std::string GetHostName(){
+  string ret;
+  #ifndef WIN32
+    const int len=128; char hname[len];
+    gethostname(hname,len);
+    ret=hname;
+  #endif
+  return(ret);
+}
+
+//==============================================================================
+/// Returns current date and time.
+//==============================================================================
+time_t GetDateTimet(){
+  time_t rawtime;
+  time(&rawtime);
+  return(rawtime);
+}
+
+//==============================================================================
+/// Returns current date and time according to user data.
+/// day=1-31, month=1-12, hour=0-23, min=0-59, sec=0-59
+//==============================================================================
+time_t GetDateTimet(int day,int month,int year,int hour,int min,int sec){
+  time_t rawtime;
+  time(&rawtime);
+  struct tm* timeinfo;
+  timeinfo=gmtime(&rawtime);
+  timeinfo->tm_year=year-1900;
+  timeinfo->tm_mon=month - 1;
+  timeinfo->tm_mday=day;
+  timeinfo->tm_hour=hour;
+  timeinfo->tm_min=min;
+  timeinfo->tm_sec=sec;
+  return(mktime(timeinfo));
+}
+
+//==============================================================================
+/// Returns input date and time + nseg using the format.
+//==============================================================================
+std::string GetDateTimeFormat(time_t tt,const char* format,int nseg){
+  time_t rawtime=tt;
+  rawtime+=nseg;
+  struct tm* timeinfo;
+  timeinfo=localtime(&rawtime);
+  //timeinfo=gmtime(&rawtime);
+  char bufftime[256];
+  strftime(bufftime,256,format,timeinfo);
+  return(bufftime);
+}
+
+//==============================================================================
 /// Returns date and time of the system + nseg using the format.
 //==============================================================================
 std::string GetDateTimeFormat(const char* format,int nseg){
   time_t rawtime;
-  struct tm *timeinfo;
   time(&rawtime);
   rawtime+=nseg;
+  struct tm* timeinfo;
   timeinfo=localtime(&rawtime);
   //timeinfo=gmtime(&rawtime);
   char bufftime[256];
@@ -79,9 +133,11 @@ std::string GetDateTimeFormat(const char* format,int nseg){
 /// Returns date and time of the system + nseg using the format.
 /// day=1-31, month=1-12, hour=0-23, min=0-59, sec=0-59
 //==============================================================================
-std::string GetDateTimeFormatUTC(const char* format,int day,int month,int year,int hour,int min,int sec){
+std::string GetDateTimeFormatUTC(const char* format,int day,int month,int year
+  ,int hour,int min,int sec)
+{
   time_t rawtime;
-  struct tm *timeinfo;
+  struct tm* timeinfo;
   time(&rawtime);
   timeinfo=gmtime(&rawtime);
   timeinfo->tm_year=year-1900;
@@ -102,7 +158,7 @@ std::string GetDateTimeFormatUTC(const char* format,int day,int month,int year,i
 //==============================================================================
 int GetWeekDay(int day,int month,int year){
   time_t rawtime;
-  struct tm *timeinfo;
+  struct tm* timeinfo;
   time(&rawtime);
   timeinfo=gmtime(&rawtime);
   timeinfo->tm_year=year-1900;
@@ -119,7 +175,7 @@ int GetWeekDay(int day,int month,int year){
 //==============================================================================
 int GetYearDay(int day,int month,int year){
   time_t rawtime;
-  struct tm *timeinfo;
+  struct tm* timeinfo;
   time(&rawtime);
   timeinfo=gmtime(&rawtime);
   timeinfo->tm_year=year-1900;
@@ -139,6 +195,20 @@ int GetWeekNumber(int day,int month,int year){
   int v=-1;
   if(tx.size()==2)v=int(unsigned(tx[0]-'0')*10+unsigned(tx[1]-'0'));
   return(v);
+}
+
+//==============================================================================
+/// Returns day, month and year from text dd-mm-yyyy.
+/// Returns 0 when input data is invalid.
+//==============================================================================
+void GetDateValuesDMY(std::string datetx,int& day,int& month,int& year){
+  day=month=year=0;
+  if(datetx.size()==10){
+    day  =atoi(datetx.substr(0,2).c_str());
+    month=atoi(datetx.substr(3,2).c_str());
+    year =atoi(datetx.substr(6,4).c_str());
+    if(day<1 || day>31 || month<1 || month>12 || year<0)day=month=year=0;
+  }
 }
 
 //==============================================================================
@@ -162,9 +232,9 @@ double GetRuntime(){
 /// Returns duration in format xh ym zs.
 //==============================================================================
 std::string GetHoursOfSeconds(double s){
-  int hours=int(s/3600);
+  const int hours=int(s/3600);
   s-=double(hours*3600);
-  int mins=int(s/60);
+  const int mins=int(s/60);
   s-=double(mins*60);
   char cad[64];
   sprintf(cad,"%dh %dm %.1fs",hours,mins,s);
@@ -191,26 +261,29 @@ std::string GetTextRandomCode(unsigned length){
 //==============================================================================
 /// Returns string using the same parameters used in printf().
 //==============================================================================
-std::string PrintStr(const char *format,...){
-  std::string ret;
-  const unsigned SIZE=1024;
-  char buffer[SIZE+1];
-  va_list args;
-  va_start(args, format);
-  int size=vsnprintf(buffer,SIZE,format,args);
-  if(size>=0 && size<SIZE)ret=buffer;
-  else{
-    int rsize=-1;
-    int size2=SIZE+SIZE*2;
-    for(int c=0;c<10 && rsize<0;c++,size2+=SIZE*2){
-      char *buff2=new char[size2+1];
-      rsize=vsnprintf(buff2,size2,format,args);
-      if(rsize>=0)ret=buff2;
-      delete[] buff2;
-    }
-    if(rsize<0)Run_ExceptioonFun("Output text is too long.");
+std::string PrintStr(const char* format,...){
+  string ret;
+  const int SIZE=1022;
+  int rsize=0;
+  {
+    char buffer[SIZE+2];
+    va_list args;
+    va_start(args,format);
+    rsize=vsnprintf(buffer,SIZE,format,args); //ok
+    if(rsize>=0 && rsize<SIZE)ret=buffer;
+    va_end(args);
   }
-  va_end(args);
+  if(rsize>=SIZE){
+    const int size2=rsize+10;
+    char* buff2=new char[size2];
+    va_list args;
+    va_start(args,format);
+    const int rsize2=vsnprintf(buff2,size2,format,args); //ok
+    if(rsize2>=0 && rsize2<size2)ret=buff2;
+    else Run_ExceptioonFun("Output text is too long.");
+    va_end(args);
+    delete[] buff2;
+  }
   return(ret);
 }
   
@@ -218,38 +291,41 @@ std::string PrintStr(const char *format,...){
 /// Returns string using the same parameters used in printf() and the CSV 
 /// separator in format is corrected.
 //==============================================================================
-std::string PrintStrCsv(bool csvsepcoma,const char *format,...){
-  const std::string format2=StrCsvSep(csvsepcoma,format);
-  const char *formatok=format2.c_str();
-  std::string ret;
-  const unsigned SIZE=1024;
-  char buffer[SIZE+1];
-  va_list args;
-  va_start(args,format);
-  int size=vsnprintf(buffer,SIZE,formatok,args);
-  if(size>=0 && size<SIZE)ret=buffer;
-  else{
-    int rsize=-1;
-    int size2=SIZE+SIZE*2;
-    for(int c=0;c<10 && rsize<0;c++,size2+=SIZE*2){
-      char *buff2=new char[size2+1];
-      rsize=vsnprintf(buff2,size2,formatok,args);
-      if(rsize>=0)ret=buff2;
-      delete[] buff2;
-    }
-    if(rsize<0)Run_ExceptioonFun("Output text is too long.");
+std::string PrintStrCsv(bool csvsepcoma,const char* format,...){
+  const string format2=StrCsvSep(csvsepcoma,format);
+  const char* formatok=format2.c_str();
+  string ret;
+  const int SIZE=1022;
+  int rsize=0;
+  {
+    char buffer[SIZE+2];
+    va_list args;
+    va_start(args,format);
+    rsize=vsnprintf(buffer,SIZE,formatok,args); //ok
+    if(rsize>=0 && rsize<SIZE)ret=buffer;
+    va_end(args);
   }
-  va_end(args);
+  if(rsize>=SIZE){
+    const int size2=rsize+10;
+    char* buff2=new char[size2];
+    va_list args;
+    va_start(args,format);
+    const int rsize2=vsnprintf(buff2,size2,formatok,args); //ok
+    if(rsize2>=0 && rsize2<size2)ret=buff2;
+    else Run_ExceptioonFun("Output text is too long.");
+    va_end(args);
+    delete[] buff2;
+  }
   return(ret);
 }
 
 //==============================================================================
 /// Gets new string where the CSV separator is corrected.
 //==============================================================================
-std::string StrCsvSep(bool csvsepcoma,const std::string &cad){
+std::string StrCsvSep(bool csvsepcoma,const std::string& cad){
   const char sep0=(csvsepcoma? ';': ',');
   const char sep1=(csvsepcoma? ',': ';');
-  std::string str=cad;
+  string str=cad;
   const unsigned size=unsigned(str.size());
   for(unsigned c=0;c<size;c++)if(str[c]==sep0)str[c]=sep1;
   return(str);
@@ -294,7 +370,6 @@ std::string RealStr(double v,unsigned ndigits,bool removezeros){
   ndigits=max(ndigits,1u);
   string fmt=NaturalFmt(v,ndigits,removezeros);
   string ret=PrintStr(fmt.c_str(),v);
-
   const int smax=ndigits+5+(v>=0? 0: 1);
   if(ret.size()>smax || fabs(v)>pow(10,ndigits))ret=PrintStr("%.*e",ndigits-1,v);
   return(ret);
@@ -305,8 +380,8 @@ std::string RealStr(double v,unsigned ndigits,bool removezeros){
 //==============================================================================
 std::string IntStrFill(int v,int vmax){
   unsigned len=unsigned(UintStr(vmax).length());
-  std::string value=IntStr(v);
-  while(unsigned(value.length())<len)value=std::string("0")+value;
+  string value=IntStr(v);
+  while(unsigned(value.length())<len)value=string("0")+value;
   return(value);
 }
 
@@ -315,8 +390,8 @@ std::string IntStrFill(int v,int vmax){
 //==============================================================================
 std::string UintStrFill(unsigned v,unsigned vmax,const char fillchar){
   unsigned len=unsigned(UintStr(vmax).length());
-  std::string value=UintStr(v);
-  std::string fill="."; fill[0]=fillchar;
+  string value=UintStr(v);
+  string fill="."; fill[0]=fillchar;
   while(unsigned(value.length())<len)value=fill+value;
   return(value);
 }
@@ -327,7 +402,7 @@ std::string UintStrFill(unsigned v,unsigned vmax,const char fillchar){
 std::string LongStr(llong v){
   char cad[128];
   sprintf(cad,"%lld",v);
-  return(std::string(cad));
+  return(string(cad));
 }
 
 //==============================================================================
@@ -336,7 +411,7 @@ std::string LongStr(llong v){
 std::string UlongStr(ullong v){
   char cad[128];
   sprintf(cad,"%llu",v);
-  return(std::string(cad));
+  return(string(cad));
 }
 
 //==============================================================================
@@ -345,7 +420,7 @@ std::string UlongStr(ullong v){
 std::string UintStr(unsigned v,const char* fmt){
   char cad[128];
   sprintf(cad,fmt,v);
-  return(std::string(cad));
+  return(string(cad));
 }
 
 //==============================================================================
@@ -354,25 +429,89 @@ std::string UintStr(unsigned v,const char* fmt){
 std::string IntStr(int v){
   char cad[128];
   sprintf(cad,"%d",v);
-  return(std::string(cad));
+  return(string(cad));
 }
 
 //==============================================================================
 /// Converts tint3 value to string.
 //==============================================================================
-std::string Int3Str(const tint3 &v){
+std::string Int3Str(const tint3& v){
   char cad[128];
   sprintf(cad,"%d,%d,%d",v.x,v.y,v.z);
-  return(std::string(cad));
+  return(string(cad));
 }
 
 //==============================================================================
 /// Converts tuint3 value to string.
 //==============================================================================
-std::string Uint3Str(const tuint3 &v){
+std::string Uint3Str(const tuint3& v){
   char cad[128];
   sprintf(cad,"%u,%u,%u",v.x,v.y,v.z);
-  return(std::string(cad));
+  return(string(cad));
+}
+
+//==============================================================================
+/// Converts integral or real value to string with thousands separator.
+//==============================================================================
+std::string KnumStr(const char* v){
+  const unsigned s=unsigned(strlen(v));
+  const bool neg=(s && v[0]=='-');
+  const unsigned ci=(neg? 1: 0);
+  unsigned cf=s;
+  //-Looks for end of integral part.
+  for(unsigned c=ci;c<s && cf==s;c++){
+    if(v[c]<'0' || v[c]>'9')cf=c;
+  }
+  string num;
+  if(cf-ci>3){
+    //-Add thousands separators in integral part.
+    num.reserve(s+(s/3)+7);
+    if(neg)num.push_back('-');
+    for(unsigned c=ci;c<cf;c++){
+      num.push_back(v[c]);
+      if(cf>c+1 && (cf-c-1)%3==0)num.push_back(',');
+    }
+    //-Add real part.
+    for(unsigned c=cf;c<s;c++)num.push_back(v[c]);
+  }
+  else num=string(v);
+  return(num);
+}
+
+//==============================================================================
+/// Converts unsigned value to string with thousands separator.
+//==============================================================================
+std::string KintStr(unsigned v,bool thousep){
+  char cad[128];
+  sprintf(cad,"%u",v);
+  return(thousep? KnumStr(cad): string(cad));
+}
+
+//==============================================================================
+/// Converts integer value to string with thousands separator.
+//==============================================================================
+std::string KintStr(int v,bool thousep){
+  char cad[128];
+  sprintf(cad,"%d",v);
+  return(thousep? KnumStr(cad): string(cad));
+}
+
+//==============================================================================
+/// Converts ullong value to string with thousands separator.
+//==============================================================================
+std::string KintStr(ullong v,bool thousep){
+  char cad[128];
+  sprintf(cad,"%llu",v);
+  return(thousep? KnumStr(cad): string(cad));
+}
+
+//==============================================================================
+/// Converts llong value to string with thousands separator.
+//==============================================================================
+std::string KintStr(llong v,bool thousep){
+  char cad[128];
+  sprintf(cad,"%lld",v);
+  return(thousep? KnumStr(cad): string(cad));
 }
 
 //==============================================================================
@@ -381,7 +520,7 @@ std::string Uint3Str(const tuint3 &v){
 std::string FloatStr(float v,const char* fmt){
   char cad[128];
   sprintf(cad,fmt,v);
-  return(std::string(cad));
+  return(string(cad));
 }
 
 //==============================================================================
@@ -390,16 +529,16 @@ std::string FloatStr(float v,const char* fmt){
 std::string FloatxStr(float v,const char* fmt){
   char cad[128];
   sprintf(cad,fmt,v);
-  return(v==-FLT_MAX? std::string("MIN"): (v==FLT_MAX? std::string("MAX"): std::string(cad)));
+  return(v==-FLT_MAX? string("MIN"): (v==FLT_MAX? string("MAX"): string(cad)));
 }
 
 //==============================================================================
 /// Converts real value to string.
 //==============================================================================
-std::string Float3Str(const tfloat3 &v,const char* fmt){
+std::string Float3Str(const tfloat3& v,const char* fmt){
   char cad[1024];
   sprintf(cad,fmt,v.x,v.y,v.z);
-  return(std::string(cad));
+  return(string(cad));
 }
 
 //==============================================================================
@@ -408,7 +547,7 @@ std::string Float3Str(const tfloat3 &v,const char* fmt){
 std::string DoubleStr(double v,const char* fmt){
   char cad[512];
   sprintf(cad,fmt,v);
-  return(std::string(cad));
+  return(string(cad));
 }
 
 //==============================================================================
@@ -417,31 +556,31 @@ std::string DoubleStr(double v,const char* fmt){
 std::string DoublexStr(double v,const char* fmt){
   char cad[512];
   sprintf(cad,fmt,v);
-  return(v==-DBL_MAX? std::string("MIN"): (v==DBL_MAX? std::string("MAX"): std::string(cad)));
+  return(v==-DBL_MAX? string("MIN"): (v==DBL_MAX? string("MAX"): string(cad)));
 }
 
 //==============================================================================
 /// Converts real value to string.
 //==============================================================================
-std::string Double3Str(const tdouble3 &v,const char* fmt){
+std::string Double3Str(const tdouble3& v,const char* fmt){
   char cad[2048];
   sprintf(cad,fmt,v.x,v.y,v.z);
-  return(std::string(cad));
+  return(string(cad));
 }
 
 //==============================================================================
 /// Converts real value to string.
 //==============================================================================
-std::string Double4Str(const tdouble4 &v,const char* fmt){
+std::string Double4Str(const tdouble4& v,const char* fmt){
   char cad[2048];
   sprintf(cad,fmt,v.x,v.y,v.z,v.w);
-  return(std::string(cad));
+  return(string(cad));
 }
 
 //==============================================================================
 /// Converts vector of strings to string list.
 //==============================================================================
-std::string VectorStr(const std::vector<std::string> &v){
+std::string VectorStr(const std::vector<std::string>& v){
   string ret;
   const unsigned n=unsigned(v.size());
   for(unsigned c=0;c<n;c++)ret=ret+(c? string(",")+v[c]: v[c]);
@@ -451,7 +590,7 @@ std::string VectorStr(const std::vector<std::string> &v){
 //==============================================================================
 /// Returns true when str is a valid integer number.
 //==============================================================================
-bool StrIsIntegerNumber(const std::string &str){
+bool StrIsIntegerNumber(const std::string& str){
   bool valid=true;
   byte state=0;
   unsigned n=unsigned(str.size());
@@ -489,7 +628,7 @@ bool StrIsIntegerNumber(const std::string &str){
 //==============================================================================
 /// Returns true when str is a valid real number.
 //==============================================================================
-bool StrIsRealNumber(const std::string &str){
+bool StrIsRealNumber(const std::string& str){
   bool valid=true;
   byte state=0;
   const unsigned n=unsigned(str.size());
@@ -542,7 +681,7 @@ bool StrIsRealNumber(const std::string &str){
 //==============================================================================
 /// Converts string to int value.
 //==============================================================================
-int StrToInt(const std::string &v){
+int StrToInt(const std::string& v){
   return(atoi(v.c_str()));
 }
 
@@ -560,7 +699,7 @@ tint3 StrToInt3(std::string v){
 //==============================================================================
 /// Converts string to double value.
 //==============================================================================
-double StrToDouble(const std::string &v){
+double StrToDouble(const std::string& v){
   return(atof(v.c_str()));
 }
 
@@ -578,8 +717,8 @@ tdouble3 StrToDouble3(std::string v){
 //==============================================================================
 /// Gets string in uppercase.
 //==============================================================================
-std::string StrUpper(const std::string &cad){
-  std::string ret;
+std::string StrUpper(const std::string& cad){
+  string ret;
   for(unsigned c=0;c<cad.length();c++)ret=ret+char(toupper(cad[c]));
   return(ret);
 }
@@ -587,17 +726,46 @@ std::string StrUpper(const std::string &cad){
 //==============================================================================
 /// Gets string in lowercase.
 //==============================================================================
-std::string StrLower(const std::string &cad){
-  std::string ret;
+std::string StrLower(const std::string& cad){
+  string ret;
   for(unsigned c=0;c<cad.length();c++)ret=ret+char(tolower(cad[c]));
   return(ret);
 }
 
 //==============================================================================
+/// Fills string on the begin with another string.
+//==============================================================================
+std::string StrFillBegin(const std::string& cad,const std::string rcad
+  ,unsigned maxsize)
+{
+  string ret=cad;
+  if(!rcad.empty() && unsigned(ret.size())<maxsize){
+    while(unsigned(ret.size())<maxsize)ret=rcad+ret;
+    if(unsigned(ret.size())>maxsize)ret=ret.substr(unsigned(ret.size())-maxsize);
+  }
+  return(ret);
+}
+
+//==============================================================================
+/// Fills string on the end with another string.
+//==============================================================================
+std::string StrFillEnd(const std::string& cad,const std::string rcad
+  ,unsigned maxsize)
+{
+  string ret=cad;
+  if(!rcad.empty() && unsigned(ret.size())<maxsize){
+    while(unsigned(ret.size())<maxsize)ret=ret+rcad;
+    if(unsigned(ret.size())>maxsize)ret=ret.substr(0,maxsize);
+  }
+  return(ret);
+}
+
+
+//==============================================================================
 /// Gets string without spaces at the beginning and end.
 //==============================================================================
-std::string StrTrim(const std::string &cad){
-  std::string ret;
+std::string StrTrim(const std::string& cad){
+  string ret;
   int lsp=0,rsp=0;
   for(int c=0;c<int(cad.length())&&cad[c]==' ';c++)lsp++;
   for(int c=int(cad.length())-1;c<int(cad.length())&&cad[c]==' ';c--)rsp++;
@@ -608,8 +776,8 @@ std::string StrTrim(const std::string &cad){
 //==============================================================================
 /// Gets string without spaces at the beginning.
 //==============================================================================
-std::string StrTrimBegin(const std::string &cad){
-  std::string ret;
+std::string StrTrimBegin(const std::string& cad){
+  string ret;
   int lsp=0;
   for(int c=0;c<int(cad.length())&&cad[c]==' ';c++)lsp++;
   int size=int(cad.length())-(lsp);
@@ -619,8 +787,8 @@ std::string StrTrimBegin(const std::string &cad){
 //==============================================================================
 /// Gets string without spaces at the end.
 //==============================================================================
-std::string StrTrimEnd(const std::string &cad){
-  std::string ret;
+std::string StrTrimEnd(const std::string& cad){
+  string ret;
   int rsp=0;
   for(int c=int(cad.length())-1;c<int(cad.length())&&cad[c]==' ';c--)rsp++;
   int size=int(cad.length())-(rsp);
@@ -630,8 +798,8 @@ std::string StrTrimEnd(const std::string &cad){
 //==============================================================================
 /// Gets string without repeated spaces.
 //==============================================================================
-std::string StrTrimRepeated(const std::string &cad){
-  std::string ret;
+std::string StrTrimRepeated(const std::string& cad){
+  string ret;
   bool lastsp=false;
   for(int c=0;c<int(cad.length());c++){
     const char let=cad[c];
@@ -646,8 +814,8 @@ std::string StrTrimRepeated(const std::string &cad){
 //==============================================================================
 /// Gets string without the character indicated.
 //==============================================================================
-std::string StrWithoutChar(const std::string &cad,char let){
-  std::string ret;
+std::string StrWithoutChar(const std::string& cad,char let){
+  string ret;
   for(int c=0;c<int(cad.length());c++)if(cad[c]!=let)ret=ret+cad[c];
   return(ret);
 }
@@ -655,8 +823,8 @@ std::string StrWithoutChar(const std::string &cad,char let){
 //==============================================================================
 /// Gets string with the string indicated n times.
 //==============================================================================
-std::string StrRepeat(const std::string &cad,unsigned count){
-  std::string ret;
+std::string StrRepeat(const std::string& cad,unsigned count){
+  string ret;
   for(unsigned c=0;c<count;c++)ret=ret+cad;
   return(ret);
 }
@@ -664,8 +832,10 @@ std::string StrRepeat(const std::string &cad,unsigned count){
 //==============================================================================
 /// Gets new string where all key substring was replaced by newcad.
 //==============================================================================
-std::string StrReplace(const std::string &cad,const std::string &key,const std::string &newcad){
-  std::string str=cad;
+std::string StrReplace(const std::string& cad,const std::string& key
+  ,const std::string& newcad)
+{
+  string str=cad;
   int posini=0;
   int pos=int(str.substr(posini).find(key));
   int c=0;
@@ -681,11 +851,27 @@ std::string StrReplace(const std::string &cad,const std::string &key,const std::
 }
 
 //==============================================================================
+/// Gets new string removing last part since key.
+//==============================================================================
+std::string StrRemoveAfter(const std::string& cad,const std::string& key){
+  const int pos=int(cad.find(key));
+  return(pos<0? cad: cad.substr(0,pos));
+}
+
+//==============================================================================
+/// Gets new string removing first part until key.
+//==============================================================================
+std::string StrRemoveBefore(const std::string& cad,const std::string& key){
+  const int pos=int(cad.find(key));
+  return(pos<0? cad: cad.substr(pos+key.length()));
+}
+
+//==============================================================================
 /// Replaces C-style escape sequences by normal text ("\n" -> "\\n").
 /// Escape sequences: \a, \b, \f, \n, \r, \t, \v, \\, \', \".
 //==============================================================================
-std::string StrAddSlashes(const std::string &cad){
-  std::string ret;
+std::string StrAddSlashes(const std::string& cad){
+  string ret;
   const int len=int(cad.length());
   for(int c=0;c<len;c++){
     switch(cad[c]){
@@ -709,8 +895,8 @@ std::string StrAddSlashes(const std::string &cad){
 /// Replaces text by C-style escape sequences ("\\n" -> "\n").
 /// Escape sequences: \a, \b, \f, \n, \r, \t, \v, \\, \', \".
 //==============================================================================
-std::string StrStripSlashes(const std::string &cad){
-  std::string ret;
+std::string StrStripSlashes(const std::string& cad){
+  string ret;
   const int len=int(cad.length());
   for(int c=0;c<len;c++){
     if(cad[c]=='\\' && c+1<len){
@@ -734,9 +920,9 @@ std::string StrStripSlashes(const std::string &cad){
 }
 
 //==============================================================================
-/// Inidicates if the string cad only contains characters in the string chars.
+/// Indicates if the string cad only contains characters in the string chars.
 //==============================================================================
-bool StrOnlyChars(const std::string &cad,const std::string &chars){
+bool StrOnlyChars(const std::string& cad,const std::string& chars){
   bool ok=true;
   const unsigned nc=unsigned(chars.length());
   for(int c=0;c<int(cad.length()) && ok;c++){
@@ -751,7 +937,7 @@ bool StrOnlyChars(const std::string &cad,const std::string &chars){
 //==============================================================================
 /// Loads lines from text file. Returns error code (0 no error).
 //==============================================================================
-int StrFileToVector(const std::string &file,std::vector<std::string> &lines){
+int StrFileToVector(const std::string& file,std::vector<std::string>& lines){
   int error=0;
   ifstream pf;
   pf.open(file.c_str());
@@ -772,7 +958,7 @@ int StrFileToVector(const std::string &file,std::vector<std::string> &lines){
 //==============================================================================
 /// Saves lines in a new text file. Returns error code (0 no error).
 //==============================================================================
-int StrVectorToFile(const std::string &file,const std::vector<std::string> &lines){
+int StrVectorToFile(const std::string& file,const std::vector<std::string>& lines){
   int error=0;
   fstream pf;
   pf.open(file.c_str(),ios::binary|ios::out);
@@ -803,12 +989,12 @@ std::string StrFileError(int error){
 }
 
 //==============================================================================
-/// Returns the text untill the indicated mark and saves the rest in text format.
+/// Returns the text until the indicated mark and saves the rest in text format.
 //==============================================================================
-std::string StrSplit(const std::string mark,std::string &text){
+std::string StrSplit(const std::string mark,std::string& text){
   const unsigned smark=unsigned(mark.size());
   int tpos=int(text.find(mark));
-  std::string ret=(tpos>=0? text.substr(0,tpos): text);
+  string ret=(tpos>=0? text.substr(0,tpos): text);
   text=(tpos>=0? text.substr(tpos+smark): "");
   return(ret);
 }
@@ -821,7 +1007,7 @@ unsigned StrSplitCount(const std::string mark,std::string text){
   unsigned count=0;
   while(!text.empty()){
     int tpos=int(text.find(mark));
-    //std::string ret=(tpos>=0? text.substr(0,tpos): text);
+    //string ret=(tpos>=0? text.substr(0,tpos): text);
     text=(tpos>=0? text.substr(tpos+smark): "");
     count++;
   }
@@ -833,7 +1019,7 @@ unsigned StrSplitCount(const std::string mark,std::string text){
 //==============================================================================
 std::string StrSplitValue(const std::string mark,std::string text,unsigned value){
   const unsigned smark=unsigned(mark.size());
-  std::string ret="";
+  string ret="";
   unsigned count=0;
   while(!text.empty()){
     int tpos=int(text.find(mark));
@@ -850,10 +1036,12 @@ std::string StrSplitValue(const std::string mark,std::string text,unsigned value
 //==============================================================================
 /// Loads string list in a vector and returns size of vector.
 //==============================================================================
-unsigned VectorSplitStr(const std::string mark,const std::string &text,std::vector<std::string> &vec){
-  std::string aux=text;
+unsigned VectorSplitStr(const std::string mark,const std::string& text
+  ,std::vector<std::string>& vec)
+{
+  string aux=text;
   while(!aux.empty()){
-    std::string txv=StrSplit(mark,aux);
+    string txv=StrSplit(mark,aux);
     if(!txv.empty())vec.push_back(txv.c_str());
   }
   return((unsigned)vec.size());
@@ -862,10 +1050,12 @@ unsigned VectorSplitStr(const std::string mark,const std::string &text,std::vect
 //==============================================================================
 /// Loads unsigned list in a vector and returns size of vector.
 //==============================================================================
-unsigned VectorSplitInt(const std::string mark,const std::string &text,std::vector<int> &vec){
-  std::string aux=text;
+unsigned VectorSplitInt(const std::string mark,const std::string& text
+  ,std::vector<int>& vec)
+{
+  string aux=text;
   while(!aux.empty()){
-    std::string txv=StrSplit(mark,aux);
+    string txv=StrSplit(mark,aux);
     if(!txv.empty())vec.push_back(atoi(txv.c_str()));
   }
   return((unsigned)vec.size());
@@ -874,10 +1064,12 @@ unsigned VectorSplitInt(const std::string mark,const std::string &text,std::vect
 //==============================================================================
 /// Loads double list in a vector and returns size of vector.
 //==============================================================================
-unsigned VectorSplitDouble(const std::string mark,const std::string &text,std::vector<double> &vec){
-  std::string aux=text;
+unsigned VectorSplitDouble(const std::string mark,const std::string& text
+  ,std::vector<double>& vec)
+{
+  string aux=text;
   while(!aux.empty()){
-    std::string txv=StrSplit(mark,aux);
+    string txv=StrSplit(mark,aux);
     if(!txv.empty())vec.push_back(atof(txv.c_str()));
   }
   return((unsigned)vec.size());
@@ -886,10 +1078,12 @@ unsigned VectorSplitDouble(const std::string mark,const std::string &text,std::v
 //==============================================================================
 /// Loads float list in a vector and returns size of vector.
 //==============================================================================
-unsigned VectorSplitFloat(const std::string mark,const std::string &text,std::vector<float> &vec){
-  std::string aux=text;
+unsigned VectorSplitFloat(const std::string mark,const std::string& text
+  ,std::vector<float>& vec)
+{
+  string aux=text;
   while(!aux.empty()){
-    std::string txv=StrSplit(mark,aux);
+    string txv=StrSplit(mark,aux);
     if(!txv.empty())vec.push_back(float(atof(txv.c_str())));
   }
   return((unsigned)vec.size());
@@ -898,7 +1092,7 @@ unsigned VectorSplitFloat(const std::string mark,const std::string &text,std::ve
 //==============================================================================
 /// Set strings to lowercase.
 //==============================================================================
-void VectorLower(std::vector<std::string> &vec){
+void VectorLower(std::vector<std::string>& vec){
   const unsigned size=unsigned(vec.size());
   for(unsigned c=0;c<size;c++)vec[c]=StrLower(vec[c]);
 }
@@ -907,7 +1101,53 @@ void VectorLower(std::vector<std::string> &vec){
 /// Find string in a string vector vector since first position. 
 /// Returns UINT_MAX when it was not found.
 //==============================================================================
-unsigned VectorFind(const std::string &key,const std::vector<std::string> &vec
+unsigned VectorFind(const std::string& key,const std::string mark
+  ,const std::vector<std::string>& vec,unsigned first)
+{
+  unsigned c=first;
+  const unsigned size=unsigned(vec.size());
+  if(mark.empty())for(;c<size && vec[c]!=key;c++);
+  else for(;c<size && StrRemoveAfter(vec[c],mark)!=key;c++);
+  return(c<size? c: UINT_MAX);
+}
+
+//==============================================================================
+/// Find string mask (using *, ?, |) in a string vector vector since first position. 
+/// Returns UINT_MAX when it was not found.
+//==============================================================================
+unsigned VectorFindMask(const std::string& keymask,const std::string mark
+  ,const std::vector<std::string>& vec,unsigned first)
+{
+  unsigned ret=UINT_MAX;
+  const unsigned size=unsigned(vec.size());
+  for(unsigned c=first;c<size && ret==UINT_MAX;c++){
+    const string v=(mark.empty()? vec[c]: StrRemoveAfter(vec[c],mark));
+    //printf("---> v:[%s]  keymask:[%s]\n",v.c_str(),keymask.c_str());
+    const bool usemask=(int(keymask.find('?'))>=0 || int(keymask.find('*'))>=0 || int(keymask.find('|'))>=0);
+    if(!usemask && v==keymask)ret=c;
+    if(usemask && FileMask(v,keymask))ret=c;
+    //printf("---> usemask:%d  FileMask:%d\n",(usemask?1:0),FileMask(v,keymask)?1:0);
+  }
+  return(ret);
+}
+
+//==============================================================================
+/// Return the found value or empty string.
+/// Removes first part of value until mark.
+//==============================================================================
+std::string GetVectorFind(const std::string& key,const std::string mark
+  ,const std::vector<std::string>& vec,unsigned first)
+{
+  const unsigned c=VectorFind(key,mark,vec,first);
+  return(c!=UINT_MAX? (mark.empty()? vec[c]: StrRemoveBefore(vec[c],mark)): string(""));
+}
+
+
+//==============================================================================
+/// Find unsigned value in a vector since first position. 
+/// Returns UINT_MAX when it was not found.
+//==============================================================================
+unsigned VectorFind(const unsigned key,const std::vector<unsigned>& vec
   ,unsigned first)
 {
   unsigned c=first;
@@ -917,23 +1157,29 @@ unsigned VectorFind(const std::string &key,const std::vector<std::string> &vec
 }
 
 //==============================================================================
-/// Find string mask (using *, ?, |) in a string vector vector since first position. 
+/// Find float value in a vector since first position. 
 /// Returns UINT_MAX when it was not found.
 //==============================================================================
-unsigned VectorFindMask(const std::string &keymask,const std::vector<std::string> &vec
+unsigned VectorFind(const float key,const std::vector<float>& vec
   ,unsigned first)
 {
-  unsigned ret=UINT_MAX;
+  unsigned c=first;
   const unsigned size=unsigned(vec.size());
-  for(unsigned c=first;c<size && ret==UINT_MAX;c++){
-    const string v=vec[c];
-    //printf("---> v:[%s]  keymask:[%s]\n",v.c_str(),keymask.c_str());
-    const bool usemask=(int(keymask.find('?'))>=0 || int(keymask.find('*'))>=0 || int(keymask.find('|'))>=0);
-    if(!usemask && v==keymask)ret=c;
-    if(usemask && FileMask(v,keymask))ret=c;
-    //printf("---> usemask:%d  FileMask:%d\n",(usemask?1:0),FileMask(v,keymask)?1:0);
-  }
-  return(ret);
+  for(;c<size && vec[c]!=key;c++);
+  return(c<size? c: UINT_MAX);
+}
+
+//==============================================================================
+/// Find double value in a vector since first position. 
+/// Returns UINT_MAX when it was not found.
+//==============================================================================
+unsigned VectorFind(const double key,const std::vector<double>& vec
+  ,unsigned first)
+{
+  unsigned c=first;
+  const unsigned size=unsigned(vec.size());
+  for(;c<size && vec[c]!=key;c++);
+  return(c<size? c: UINT_MAX);
 }
 
 
@@ -954,7 +1200,9 @@ double GetFirstValueDouble(std::string tex,std::string pretex){
 //==============================================================================
 /// Returns first double value after "pretex" and returns the remaining text.
 //==============================================================================
-double GetFirstValueDouble(std::string tex,std::string &endtex,std::string pretex){
+double GetFirstValueDouble(std::string tex,std::string& endtex
+  ,std::string pretex)
+{
   if(!pretex.empty()){//-Elimina texto previo si lo hubiera.
     int pre=int(tex.find(pretex));
     if(pre>=0)tex=tex.substr(pre);
@@ -983,7 +1231,7 @@ int GetFirstValueInt(std::string tex,std::string pretex){
 //==============================================================================
 /// Returns first int value after "pretex" and returns the remaining text.
 //==============================================================================
-int GetFirstValueInt(std::string tex,std::string &endtex,std::string pretex){
+int GetFirstValueInt(std::string tex,std::string& endtex,std::string pretex){
   if(!pretex.empty()){//-Elimina texto previo si lo hubiera.
     int pre=int(tex.find(pretex));
     if(pre>=0)tex=tex.substr(pre);
@@ -998,7 +1246,7 @@ int GetFirstValueInt(std::string tex,std::string &endtex,std::string pretex){
 //==============================================================================
 /// Returns first text between "pretex" and "endtex" and returns the remaining text.
 //==============================================================================
-std::string GetFirstTextBetween(std::string tex,std::string &resttex
+std::string GetFirstTextBetween(std::string tex,std::string& resttex
   ,std::string pretex,std::string endtex)
 {
   string txv;
@@ -1022,6 +1270,67 @@ std::string GetFirstTextBetween(std::string tex,std::string &resttex
   return(txv);
 }
 
+
+//==============================================================================
+/// Returns key from "key=value".
+//==============================================================================
+unsigned Split2pVector(const std::string& text,std::vector<std::string>& vec){
+  string aux=text;
+  string keyval;
+  while(!aux.empty()){
+    string txv=StrSplit(":",aux);
+    if(int(txv.find("="))>=0){
+      if(!keyval.empty())vec.push_back(keyval);
+      keyval=txv;
+    }
+    else if(!keyval.empty()){
+      keyval=keyval+":"+txv;
+    }
+  }
+  if(!keyval.empty())vec.push_back(keyval);
+  return(unsigned(vec.size()));
+}
+
+//==============================================================================
+/// Returns key from "key=value".
+//==============================================================================
+std::string Split2pKey(const std::string& text){
+  return(StrRemoveAfter(text,"="));
+}
+
+//==============================================================================
+/// Returns value from "key=value".
+//==============================================================================
+std::string Split2pValue(const std::string& text){
+  return(StrRemoveBefore(text,"="));
+}
+
+//==============================================================================
+/// Returns tdouble3 value from "float:float:float" or "key=float:float:float".
+//==============================================================================
+tdouble3 Split2pDouble3(std::string text){
+  //printf("[%s]",text.c_str());
+  string v1=StrRemoveAfter(text,":"); text=text.substr(v1.length()); text=StrRemoveBefore(text,":");
+  v1=StrRemoveBefore(v1,"=");
+  //printf("  v1:[%s] text=[%s]  ",v1.c_str(),text.c_str());
+  string v2=StrRemoveAfter(text,":"); text=text.substr(v2.length()); text=StrRemoveBefore(text,":");
+  string v3=StrRemoveAfter(text,":");
+  //printf("=[%s]:[%s]:[%s]\n",v1.c_str(),v2.c_str(),v3.c_str());
+  return(TDouble3(atof(v1.c_str()),atof(v2.c_str()),atof(v3.c_str())));
+}
+
+//==============================================================================
+/// Returns true when some value is invalid.
+//==============================================================================
+bool Split2pDouble3Error(std::string text){
+  string v1=StrRemoveAfter(text,":"); text=text.substr(v1.length()); text=StrRemoveBefore(text,":");
+  v1=StrRemoveBefore(v1,"=");
+  string v2=StrRemoveAfter(text,":"); text=text.substr(v2.length()); text=StrRemoveBefore(text,":");
+  string v3=StrRemoveAfter(text,":");
+  bool err=(v1.empty() || v2.empty() || v3.empty());
+  err=(err || !StrIsRealNumber(v1) || !StrIsRealNumber(v2) || !StrIsRealNumber(v3));
+  return(err);
+}
 
 
 //==============================================================================
@@ -1055,95 +1364,179 @@ int CompareVersions(std::string v1,std::string v2){
 //==============================================================================
 /// Returns variable and its value in text format.
 //==============================================================================
-std::string VarStr(const std::string &name,const char *value){
+std::string VarStr(const std::string& name,const char* value){
   return(name+"=\""+value+"\"");
 }
-std::string VarStr(const std::string &name,const std::string &value){
+//==============================================================================
+std::string VarStr(const std::string& name,const std::string& value){
   return(name+"=\""+value+"\""); 
 }
-std::string VarStr(const std::string &name,float value){ 
+//==============================================================================
+std::string VarStr(const std::string& name,float value){ 
   //return(name+"="+FloatStr(value)); 
   return(name+"="+RealStr(value));
 }
-std::string VarStr(const std::string &name,tfloat3 value){ 
+//==============================================================================
+std::string VarStr(const std::string& name,tfloat3 value){ 
   //return(name+"=("+FloatStr(value.x)+","+FloatStr(value.y)+","+FloatStr(value.z)+")"); 
   return(name+"=("+RealStr(value.x)+","+RealStr(value.y)+","+RealStr(value.z)+")"); 
 }
-std::string VarStr(const std::string &name,double value){ 
+//==============================================================================
+std::string VarStr(const std::string& name,double value){ 
   //return(name+"="+DoubleStr(value)); 
   return(name+"="+RealStr(value)); 
 }
-std::string VarStr(const std::string &name,tdouble3 value){ 
+//==============================================================================
+std::string VarStr(const std::string& name,tdouble3 value){ 
   //return(name+"=("+DoubleStr(value.x)+","+DoubleStr(value.y)+","+DoubleStr(value.z)+")");
   return(name+"=("+RealStr(value.x)+","+RealStr(value.y)+","+RealStr(value.z)+")");
 }
-std::string VarStr(const std::string &name,bool value){ 
+//==============================================================================
+std::string VarStr(const std::string& name,bool value){ 
   return(name+"="+(value? "True": "False")+""); 
 }
-std::string VarStr(const std::string &name,int value){
+//==============================================================================
+std::string VarStr(const std::string& name,int value){
   char cad[30];
   sprintf(cad,"=%d",value);
   return(name+cad);
 }
-std::string VarStr(const std::string &name,unsigned value){
+//==============================================================================
+std::string VarStr(const std::string& name,unsigned value){
   char cad[30];
   sprintf(cad,"=%u",value);
   return(name+cad);
 }
-std::string VarStr(const std::string &name,unsigned n,const int *values,std::string size){
-  std::string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
+//==============================================================================
+std::string VarKStr(const std::string& name,unsigned value){
+  return(name+"="+KintStr(value));
+}
+//==============================================================================
+std::string VarStr(const std::string& name,unsigned n,const int* values
+  ,std::string size)
+{
+  string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
   for(unsigned c=0;c<n;c++)tex=tex+(c? ",": "")+fun::IntStr(values[c]);
   return(tex+"]");
 }
-std::string VarStr(const std::string &name,unsigned n,const unsigned *values,std::string size){
-  std::string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
+//==============================================================================
+std::string VarStr(const std::string& name,unsigned n,const unsigned* values
+  ,std::string size)
+{
+  string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
   for(unsigned c=0;c<n;c++)tex=tex+(c? ",": "")+fun::UintStr(values[c]);
   return(tex+"]");
 }
-std::string VarStr(const std::string &name,unsigned n,const word *values,std::string size){
-  std::string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
+//==============================================================================
+std::string VarStr(const std::string& name,unsigned n,const ullong* values
+  ,std::string size)
+{
+  string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
+  for(unsigned c=0;c<n;c++)tex=tex+(c? ",": "")+fun::UlongStr(values[c]);
+  return(tex+"]");
+}
+//==============================================================================
+std::string VarStr(const std::string& name,unsigned n,const word* values
+  ,std::string size)
+{
+  string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
   for(unsigned c=0;c<n;c++)tex=tex+(c? ",": "")+fun::UintStr(values[c]);
   return(tex+"]");
 }
-std::string VarStr(const std::string &name,unsigned n,const float *values,std::string size,const char *fmt){
-  std::string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
+//==============================================================================
+std::string VarStr(const std::string& name,unsigned n,const float* values
+  ,std::string size,const char* fmt)
+{
+  string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
   for(unsigned c=0;c<n;c++)tex=tex+(c? ",": "")+fun::FloatStr(values[c],fmt);
   return(tex+"]");
 }
-std::string VarStr(const std::string &name,unsigned n,const double *values,std::string size,const char *fmt){
-  std::string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
+//==============================================================================
+std::string VarStr(const std::string& name,unsigned n,const double* values
+  ,std::string size,const char* fmt)
+{
+  string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
   for(unsigned c=0;c<n;c++)tex=tex+(c? ",": "")+fun::DoubleStr(values[c],fmt);
   return(tex+"]");
 }
-std::string VarStr(const std::string &name,unsigned n,const tdouble3 *values,std::string size,const char *fmt){
-  std::string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
+//==============================================================================
+std::string VarStr(const std::string& name,unsigned n,const tdouble3* values
+  ,std::string size,const char* fmt)
+{
+  string tex=name+"["+(size=="?"? UintStr(n): size)+"]=[";
   for(unsigned c=0;c<n;c++)tex=tex+(c? ", ": "")+"("+fun::Double3xStr(values[c],fmt)+")";
   return(tex+"]");
 }
-std::string VarStr(const std::string &name,const std::vector<int> &values,std::string size){
+//==============================================================================
+std::string VarStr(const std::string& name,const std::vector<int>& values
+  ,std::string size)
+{
   return(VarStr(name,unsigned(values.size()),values.data(),size));
 }
-std::string VarStr(const std::string &name,const std::vector<tdouble3> &values,std::string size,const char *fmt){
+//==============================================================================
+std::string VarStr(const std::string& name,const std::vector<unsigned>& values
+  ,std::string size)
+{
+  return(VarStr(name,unsigned(values.size()),values.data(),size));
+}
+//==============================================================================
+std::string VarStr(const std::string& name,const std::vector<double>& values
+  ,std::string size)
+{
+  return(VarStr(name,unsigned(values.size()),values.data(),size));
+}
+//==============================================================================
+std::string VarStr(const std::string& name,const std::vector<tdouble3>& values
+  ,std::string size,const char* fmt)
+{
   return(VarStr(name,unsigned(values.size()),values.data(),size,fmt));
 }
 
 //==============================================================================
 /// Prints on the screen a variable with its value.
 //==============================================================================
-void PrintVar(const std::string &name,const char *value,const std::string &post){ printf("%s%s",VarStr(name,value).c_str(),post.c_str()); }
-void PrintVar(const std::string &name,const std::string &value,const std::string &post){ printf("%s%s",VarStr(name,value).c_str(),post.c_str()); }
-void PrintVar(const std::string &name,float value,const std::string &post){ printf("%s%s",VarStr(name,value).c_str(),post.c_str()); }
-void PrintVar(const std::string &name,double value,const std::string &post){ printf("%s%s",VarStr(name,value).c_str(),post.c_str()); }
-void PrintVar(const std::string &name,tfloat3 value,const std::string &post){ printf("%s%s",VarStr(name,value).c_str(),post.c_str()); }
-void PrintVar(const std::string &name,tdouble3 value,const std::string &post){ printf("%s%s",VarStr(name,value).c_str(),post.c_str()); }
-void PrintVar(const std::string &name,bool value,const std::string &post){ printf("%s%s",VarStr(name,value).c_str(),post.c_str()); }
-void PrintVar(const std::string &name,int value,const std::string &post){ printf("%s%s",VarStr(name,value).c_str(),post.c_str()); }
-void PrintVar(const std::string &name,unsigned value,const std::string &post){ printf("%s%s",VarStr(name,value).c_str(),post.c_str()); }
+void PrintVar(const std::string& name,const char* value,const std::string& post){
+  printf("%s%s",VarStr(name,value).c_str(),post.c_str());
+}
+//==============================================================================
+void PrintVar(const std::string& name,const std::string& value
+  ,const std::string& post)
+{
+  printf("%s%s",VarStr(name,value).c_str(),post.c_str());
+}
+//==============================================================================
+void PrintVar(const std::string& name,float value,const std::string& post){
+  printf("%s%s",VarStr(name,value).c_str(),post.c_str());
+}
+//==============================================================================
+void PrintVar(const std::string& name,double value,const std::string& post){
+  printf("%s%s",VarStr(name,value).c_str(),post.c_str());
+}
+//==============================================================================
+void PrintVar(const std::string& name,tfloat3 value,const std::string& post){
+  printf("%s%s",VarStr(name,value).c_str(),post.c_str());
+}
+//==============================================================================
+void PrintVar(const std::string& name,tdouble3 value,const std::string& post){
+  printf("%s%s",VarStr(name,value).c_str(),post.c_str());
+}
+//==============================================================================
+void PrintVar(const std::string& name,bool value,const std::string& post){
+  printf("%s%s",VarStr(name,value).c_str(),post.c_str());
+}
+//==============================================================================
+void PrintVar(const std::string& name,int value,const std::string& post){
+  printf("%s%s",VarStr(name,value).c_str(),post.c_str());
+}
+//==============================================================================
+void PrintVar(const std::string& name,unsigned value,const std::string& post){
+  printf("%s%s",VarStr(name,value).c_str(),post.c_str());
+}
 
 //==============================================================================
 /// Returns JSON object as string.
 //==============================================================================
-std::string JSONObject(const std::vector<std::string> &properties){
+std::string JSONObject(const std::vector<std::string>& properties){
   const unsigned size=unsigned(properties.size());
   if(!size)return("{ }");
   string tx="{ ";
@@ -1158,7 +1551,7 @@ std::string JSONObject(const std::vector<std::string> &properties){
 //==============================================================================
 /// Returns JSON array as string.
 //==============================================================================
-std::string JSONArray(const std::vector<std::string> &values){
+std::string JSONArray(const std::vector<std::string>& values){
   const unsigned size=unsigned(values.size());
   if(!size)return("[ ]");
   string tx="[ ";
@@ -1178,7 +1571,7 @@ std::string JSONArray(const std::vector<std::string> &values){
 /// Returns information about a file, indicates whether file or directory.
 /// 0:No exists, 1:Directory, 2:File
 //==============================================================================
-int FileType(const std::string &name){
+int FileType(const std::string& name){
   int ret=0;
   struct stat stfileinfo;
   int intstat=stat(name.c_str(),&stfileinfo);
@@ -1194,7 +1587,7 @@ int FileType(const std::string &name){
 /// Returns time of last modification in a file.
 /// 0:It is not a valid file.
 //==============================================================================
-ullong FileModifTime(const std::string &name){
+ullong FileModifTime(const std::string& name){
   ullong ret=0;
   struct stat stfileinfo;
   int intstat=stat(name.c_str(),&stfileinfo);
@@ -1205,7 +1598,7 @@ ullong FileModifTime(const std::string &name){
 //==============================================================================
 /// Returns size of file or -1 in case of error.
 //==============================================================================
-llong FileSize(const std::string &name){
+llong FileSize(const std::string& name){
   llong size=-1;
   std::ifstream fsrc(name.c_str(),std::ifstream::ate|std::ios::binary);
   if(fsrc)size=llong(fsrc.tellg());
@@ -1223,14 +1616,14 @@ std::string GetCurrentDir(){
   #else
   getcwd(buff,FILENAME_MAX);
   #endif
-  //:std::string current_dir(buff);
+  //string current_dir(buff);
   return(buff);
 }
 
 //==============================================================================
 /// Creates directory in current directory. Returns no zero in case of error.
 //==============================================================================
-int Mkdir(const std::string &dirname){
+int Mkdir(const std::string& dirname){
   int ret=0;
   #ifdef WIN32
   ret=_mkdir(dirname.c_str());
@@ -1250,15 +1643,15 @@ int MkdirPath(std::string path){
   for(unsigned c=0;c<unsigned(path.size());c++)if(path[c]=='\\')path[c]='/';
   //:printf("----> path: [%s]\n",path.c_str());
   if(!path.empty() && !DirExists(path)){
-    std::string path0;
-    std::string aux=path;
+    string path0;
+    string aux=path;
     #ifndef WIN32
       const bool linuxroot=(path[0]=='/');
     #else
       const bool linuxroot=false;
     #endif
     while(!aux.empty()){
-      std::string dir=StrSplit("/",aux);
+      string dir=StrSplit("/",aux);
       //:printf("------> dir: [%s]\n",dir.c_str());
       if(!dir.empty() && dir!="."){
         if(path0.empty() && !linuxroot)path0=dir; else path0=path0+"/"+dir;
@@ -1276,13 +1669,24 @@ int MkdirPath(std::string path){
 
 
 //==============================================================================
-/// Returns the parent directory with its path.
+/// Returns the parent directory with its path. E.g. /saa/file.x  -->  /saa
 //==============================================================================
-std::string GetDirParent(const std::string &ruta){
-  std::string dir;
-  int pos=int(ruta.find_last_of("/"));
-  if(pos<=0)pos=int(ruta.find_last_of("\\"));
-  if(pos>0)dir=ruta.substr(0,pos);
+std::string GetDirParent(const std::string& fullfile){
+  string dir;
+  int pos=int(fullfile.find_last_of("/"));
+  if(pos<=0)pos=int(fullfile.find_last_of("\\"));
+  if(pos>0)dir=fullfile.substr(0,pos);
+  return(dir);
+}
+
+//==============================================================================
+/// Returns the path of file or directory. E.g. /saa/file.x  -->  /saa/
+//==============================================================================
+std::string GetParentPath(const std::string& fullfile){
+  string dir;
+  int pos=int(fullfile.find_last_of("/"));
+  if(pos<0)pos=int(fullfile.find_last_of("\\"));
+  if(pos>=0)dir=fullfile.substr(0,pos+1);
   return(dir);
 }
 
@@ -1295,15 +1699,15 @@ std::string GetCanonicalPath(std::string pathbase,std::string path){
   #else
     if(path.size()>=1 && path[0]=='/')pathbase="";
   #endif
-  std::string dir;
+  string dir;
   while(!pathbase.empty() || !path.empty()){
-    std::string text;
+    string text;
     if(!pathbase.empty()){ text=pathbase; pathbase=""; }
     else{ text=path; path=""; }
     while(!text.empty()){
       const int tpos=(int)std::min((unsigned)text.find("/"),(unsigned)text.find("\\"));
       //:printf("--> [%s] tpos:%d -> ",text.c_str(),tpos);
-      std::string ret=(tpos>=0? text.substr(0,tpos): text);
+      string ret=(tpos>=0? text.substr(0,tpos): text);
       text=(tpos>=0? text.substr(tpos+1): "");
       //:printf("[%s][%s]  ",ret.c_str(),text.c_str());
       if(!ret.empty()){
@@ -1327,32 +1731,32 @@ std::string GetCanonicalPath(std::string pathbase,std::string path){
 /// Returns the path with indicated levels.
 //==============================================================================
 std::string GetPathLevels(std::string path,unsigned levels){
-  std::string dir="";
+  string dir="";
   path=GetDirWithoutSlash(path);
   bool root=(!path.empty() && (path[0]=='/' || path[0]=='\\'));
   if(root)path=path.substr(1,path.length()-1);
   for(unsigned c=0;c<levels && !path.empty();c++){
-    std::string sdir=fun::GetFile(path);
+    string sdir=fun::GetFile(path);
     //:printf("%d> path:[%s]  sdir:[%s]\n",c,path.c_str(),sdir.c_str());
     if(!sdir.empty()){
       if(dir.empty())dir=sdir;
       else dir=sdir+"/"+dir;
     }
     path=fun::GetDirParent(path);
-    if(path.empty() && root)dir=std::string("/")+dir;
+    if(path.empty() && root)dir=string("/")+dir;
     //:printf("%d> dir:[%s]  path:[%s]\n",c,dir.c_str(),path.c_str());
   }
-  if(!path.empty() && dir[0]!='/')dir=std::string(".../")+dir;
+  if(!path.empty() && dir[0]!='/')dir=string(".../")+dir;
   return(dir);
 }
 
 //==============================================================================
 /// Returns the filename or directory of a path.
 //==============================================================================
-std::string GetFile(const std::string &ruta){
-  std::string file;
+std::string GetFile(const std::string& ruta){
+  string file;
   int c;
-  for(c=int(ruta.size())-1;c>=0&&ruta[c]!='\\'&&ruta[c]!='/';c--);
+  for(c=int(ruta.size())-1;c>=0 && ruta[c]!='\\' && ruta[c]!='/';c--);
   file=(c<0? ruta: ruta.substr(c+1));
   return(file);
 }
@@ -1360,11 +1764,11 @@ std::string GetFile(const std::string &ruta){
 //==============================================================================
 /// Returns the path with slash.
 //==============================================================================
-std::string GetDirWithSlash(const std::string &ruta){
-  std::string rut=ruta;
+std::string GetDirWithSlash(const std::string& ruta){
+  string rut=ruta;
   if(!ruta.empty()){
     char last=ruta[ruta.length()-1];
-    if(last!='\\'&&last!='/')rut=ruta+"/";
+    if(last!='\\' && last!='/')rut=ruta+"/";
   }
   return(rut);
 }
@@ -1372,36 +1776,38 @@ std::string GetDirWithSlash(const std::string &ruta){
 //==============================================================================
 /// Returns the path without slash.
 //==============================================================================
-std::string GetDirWithoutSlash(const std::string &ruta){
+std::string GetDirWithoutSlash(const std::string& ruta){
   char last=ruta[ruta.length()-1];
-  if(last=='\\'||last=='/')return(ruta.substr(0,ruta.length()-1));
+  if(last=='\\' || last=='/')return(ruta.substr(0,ruta.length()-1));
   return(ruta);
 }
 
 //==============================================================================
 /// Returns the extension of a file.
 //==============================================================================
-std::string GetExtension(const std::string &file){
-  std::string ext;
+std::string GetExtension(const std::string& file){
+  string ext;
   int pos=(int)file.find_last_of(".");
   int posmin=std::max((int)file.find_last_of("/"),(int)file.find_last_of("\\"));
-  if(pos>=0&&pos>posmin)ext=file.substr(pos+1);
+  if(pos>=0 && pos>posmin)ext=file.substr(pos+1);
   return(ext);
 }
 
 //==============================================================================
 /// Returns the path of a file without the extension (and without the point).
 //==============================================================================
-std::string GetWithoutExtension(const std::string &ruta){
+std::string GetWithoutExtension(const std::string& ruta){
   int pos=(int)ruta.find_last_of(".");
   int posmin=std::max((int)ruta.find_last_of("/"),(int)ruta.find_last_of("\\"));
-  return(pos>=0&&pos>posmin? ruta.substr(0,pos): ruta);
+  return(pos>=0 && pos>posmin? ruta.substr(0,pos): ruta);
 }
 
 //==============================================================================
 /// Returns the parent directory, name and extension of a file.
 //==============================================================================
-void GetFileNameSplit(const std::string &file,std::string &dir,std::string &fname,std::string &fext){
+void GetFileNameSplit(const std::string& file,std::string& dir
+  ,std::string& fname,std::string& fext)
+{
   dir=GetDirParent(file);
   fname=GetFile(file);
   fext=GetExtension(fname);
@@ -1411,8 +1817,8 @@ void GetFileNameSplit(const std::string &file,std::string &dir,std::string &fnam
 //==============================================================================
 /// Adds extension (without point) to the path of a file.
 //==============================================================================
-std::string AddExtension(const std::string &file,const std::string &ext){
-  std::string file2=file;
+std::string AddExtension(const std::string& file,const std::string& ext){
+  string file2=file;
   if(file2.empty() || file2[file2.length()-1]!='.')file2+='.';
   file2+=ext;
   return(file2);
@@ -1422,7 +1828,7 @@ std::string AddExtension(const std::string &file,const std::string &ext){
 /// Returns the filename with number.
 //==============================================================================
 std::string FileNameSec(std::string fname,unsigned fnumber){
-  std::string fext=GetExtension(fname);
+  string fext=GetExtension(fname);
   if(!fext.empty())fname=fname.substr(0,fname.size()-fext.size()-1);
   if(fnumber!=UINT_MAX){
     char cad[64];
@@ -1434,10 +1840,26 @@ std::string FileNameSec(std::string fname,unsigned fnumber){
 }
 
 //==============================================================================
-/// Returns the filename with a requested size of characteres.
+/// Returns the first filename with number  that does not exist.
+/// E.g.: GetNewFileName("DBG_name_%04d.dat")
 //==============================================================================
-std::string ShortFileName(const std::string &file,unsigned maxlen,bool withpoints){
-  std::string file2;
+std::string GetNewFileName(std::string fnamefmt,unsigned initialnum){
+  string file0;
+  string file=PrintStr(fnamefmt.c_str(),initialnum);
+  while(FileExists(file) && file0!=file){
+    initialnum++;
+    file0=file;
+    file=PrintStr(fnamefmt.c_str(),initialnum);
+  }
+  if(file==file0)Run_ExceptioonFileFun("Error generation new file name.",file);
+  return(file);
+}
+
+//==============================================================================
+/// Returns the filename with a requested size of characters.
+//==============================================================================
+std::string ShortFileName(const std::string& file,unsigned maxlen,bool withpoints){
+  string file2;
   if(file.length()<=maxlen)file2=file;
   else{
     file2=file.substr(file.length()-maxlen);
@@ -1447,16 +1869,18 @@ std::string ShortFileName(const std::string &file,unsigned maxlen,bool withpoint
     if(pos1>=0)file2=file2.substr(pos1);
     if(withpoints){
       if(file2.length()+3>maxlen)file2=ShortFileName(file2,maxlen-3,false);
-      file2=std::string("...")+file2;
+      file2=string("...")+file2;
     }
   }
   return(file2);
 }
 
 //==============================================================================
-/// Returns text and filename with a requested size of characteres.
+/// Returns text and filename with a requested size of characters.
 //==============================================================================
-std::string TextWithShortFileName(const std::string &txpre,const std::string &txpos,const std::string &file,unsigned maxlen){
+std::string TextWithShortFileName(const std::string& txpre
+  ,const std::string& txpos,const std::string& file,unsigned maxlen)
+{
   int size=int(txpre.size())+int(txpos.size());
   int smax=std::max(int(10),int(maxlen)-size);
   return(txpre+fun::ShortFileName(file,unsigned(smax))+txpos);
@@ -1480,7 +1904,7 @@ bool FileMask(std::string text,std::string mask){
   int pos=(int)mask.find("|");
   if(pos>=0)return(FileMask(text,mask.substr(0,pos))||FileMask(text,mask.substr(pos+1)));
   else{
-  //-Checks corrleation of text with mask.
+  //-Checks correlation of text with mask.
     int stext=(int)text.length();
     int smask=(int)mask.length();
     if(!stext&&!smask)return(true);
@@ -1524,25 +1948,18 @@ TpByteOrder GetByteOrder(){
 }
 
 //==============================================================================
-/// Reverses the order of the bytes to exchange BigEndian and LittleEndian.
+/// Set the order of the bytes to exchange BigEndian and LittleEndian.
 //==============================================================================
-void ReverseByteOrder(llong *data,int count,llong *result){
-  for(int c=0;c<count;c++){
-    unsigned int v=((unsigned int*)data)[c*2+1];
-    unsigned int v2=((unsigned int*)data)[c*2];
-    ((unsigned int*)result)[c*2]=((v<<24)&0xFF000000)|((v<<8)&0x00FF0000)|((v>>8)&0x0000FF00)|((v>>24)&0x000000FF);
-    ((unsigned int*)result)[c*2+1]=((v2<<24)&0xFF000000)|((v2<<8)&0x00FF0000)|((v2>>8)&0x0000FF00)|((v2>>24)&0x000000FF);
-  }
-}
-//==============================================================================
-void ReverseByteOrder(int *data,int count,int *result){
+void SetByteOrder32(int* data,int count,int* result){
   for(int c=0;c<count;c++){
     unsigned int v=((unsigned int*)data)[c];
     result[c]=((v<<24)&0xFF000000)|((v<<8)&0x00FF0000)|((v>>8)&0x0000FF00)|((v>>24)&0x000000FF);
   }
 }
 //==============================================================================
-void ReverseByteOrder(short *data,int count,short *result){
+/// Set the order of the bytes to exchange BigEndian and LittleEndian.
+//==============================================================================
+void SetByteOrder16(short* data,int count,short* result){
   for(int c=0;c<count;c++){
     unsigned short v=((unsigned short*)data)[c];
     result[c]=((v<<8)&0xFF00)|((v>>8)&0x00FF);
@@ -1553,7 +1970,7 @@ void ReverseByteOrder(short *data,int count,short *result){
 //==============================================================================
 /// Resizes the allocated memory, keeping the data.
 //==============================================================================
-byte* ResizeAlloc(byte *data,unsigned ndata,unsigned newsize){
+byte* ResizeAlloc(byte* data,unsigned ndata,unsigned newsize){
   byte* data2=new byte[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(byte)*ndata);
@@ -1561,7 +1978,7 @@ byte* ResizeAlloc(byte *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-word* ResizeAlloc(word *data,unsigned ndata,unsigned newsize){
+word* ResizeAlloc(word* data,unsigned ndata,unsigned newsize){
   word* data2=new word[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(word)*ndata);
@@ -1569,7 +1986,7 @@ word* ResizeAlloc(word *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-unsigned* ResizeAlloc(unsigned *data,unsigned ndata,unsigned newsize){
+unsigned* ResizeAlloc(unsigned* data,unsigned ndata,unsigned newsize){
   unsigned* data2=new unsigned[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(unsigned)*ndata);
@@ -1577,7 +1994,7 @@ unsigned* ResizeAlloc(unsigned *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-tuint2* ResizeAlloc(tuint2 *data,unsigned ndata,unsigned newsize){
+tuint2* ResizeAlloc(tuint2* data,unsigned ndata,unsigned newsize){
   tuint2* data2=new tuint2[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(tuint2)*ndata);
@@ -1585,7 +2002,7 @@ tuint2* ResizeAlloc(tuint2 *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-tuint3* ResizeAlloc(tuint3 *data,unsigned ndata,unsigned newsize){
+tuint3* ResizeAlloc(tuint3* data,unsigned ndata,unsigned newsize){
   tuint3* data2=new tuint3[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(tuint3)*ndata);
@@ -1593,7 +2010,7 @@ tuint3* ResizeAlloc(tuint3 *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-tuint4* ResizeAlloc(tuint4 *data,unsigned ndata,unsigned newsize){
+tuint4* ResizeAlloc(tuint4* data,unsigned ndata,unsigned newsize){
   tuint4* data2=new tuint4[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(tuint4)*ndata);
@@ -1601,7 +2018,7 @@ tuint4* ResizeAlloc(tuint4 *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-int* ResizeAlloc(int *data,unsigned ndata,unsigned newsize){
+int* ResizeAlloc(int* data,unsigned ndata,unsigned newsize){
   int* data2=new int[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(unsigned)*ndata);
@@ -1609,7 +2026,7 @@ int* ResizeAlloc(int *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-tint2* ResizeAlloc(tint2 *data,unsigned ndata,unsigned newsize){
+tint2* ResizeAlloc(tint2* data,unsigned ndata,unsigned newsize){
   tint2* data2=new tint2[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(tint2)*ndata);
@@ -1617,7 +2034,7 @@ tint2* ResizeAlloc(tint2 *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-tint3* ResizeAlloc(tint3 *data,unsigned ndata,unsigned newsize){
+tint3* ResizeAlloc(tint3* data,unsigned ndata,unsigned newsize){
   tint3* data2=new tint3[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(tint3)*ndata);
@@ -1625,7 +2042,7 @@ tint3* ResizeAlloc(tint3 *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-float* ResizeAlloc(float *data,unsigned ndata,unsigned newsize){
+float* ResizeAlloc(float* data,unsigned ndata,unsigned newsize){
   float* data2=new float[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(float)*ndata);
@@ -1633,7 +2050,7 @@ float* ResizeAlloc(float *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-tfloat2* ResizeAlloc(tfloat2 *data,unsigned ndata,unsigned newsize){
+tfloat2* ResizeAlloc(tfloat2* data,unsigned ndata,unsigned newsize){
   tfloat2* data2=new tfloat2[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(tfloat2)*ndata);
@@ -1641,7 +2058,7 @@ tfloat2* ResizeAlloc(tfloat2 *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-tfloat3* ResizeAlloc(tfloat3 *data,unsigned ndata,unsigned newsize){
+tfloat3* ResizeAlloc(tfloat3* data,unsigned ndata,unsigned newsize){
   tfloat3* data2=new tfloat3[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(tfloat3)*ndata);
@@ -1649,7 +2066,7 @@ tfloat3* ResizeAlloc(tfloat3 *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-tfloat4* ResizeAlloc(tfloat4 *data,unsigned ndata,unsigned newsize){
+tfloat4* ResizeAlloc(tfloat4* data,unsigned ndata,unsigned newsize){
   tfloat4* data2=new tfloat4[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(tfloat4)*ndata);
@@ -1657,7 +2074,7 @@ tfloat4* ResizeAlloc(tfloat4 *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-double* ResizeAlloc(double *data,unsigned ndata,unsigned newsize){
+double* ResizeAlloc(double* data,unsigned ndata,unsigned newsize){
   double* data2=new double[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(double)*ndata);
@@ -1665,7 +2082,7 @@ double* ResizeAlloc(double *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-tdouble2* ResizeAlloc(tdouble2 *data,unsigned ndata,unsigned newsize){
+tdouble2* ResizeAlloc(tdouble2* data,unsigned ndata,unsigned newsize){
   tdouble2* data2=new tdouble2[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(tdouble2)*ndata);
@@ -1673,7 +2090,7 @@ tdouble2* ResizeAlloc(tdouble2 *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-tdouble3* ResizeAlloc(tdouble3 *data,unsigned ndata,unsigned newsize){
+tdouble3* ResizeAlloc(tdouble3* data,unsigned ndata,unsigned newsize){
   tdouble3* data2=new tdouble3[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(tdouble3)*ndata);
@@ -1681,7 +2098,7 @@ tdouble3* ResizeAlloc(tdouble3 *data,unsigned ndata,unsigned newsize){
   return(data2);
 }
 //==============================================================================
-tdouble4* ResizeAlloc(tdouble4 *data,unsigned ndata,unsigned newsize){
+tdouble4* ResizeAlloc(tdouble4* data,unsigned ndata,unsigned newsize){
   tdouble4* data2=new tdouble4[newsize];
   ndata=std::min(ndata,newsize);
   if(ndata)memcpy(data2,data,sizeof(tdouble4)*ndata);
@@ -1712,13 +2129,13 @@ tdouble3* NewToTDouble3(const tfloat3* data,unsigned ndata){
 //==============================================================================
 /// Returns length of vector.
 //==============================================================================
-float Length(const tfloat3 &v){
+float Length(const tfloat3& v){
  return(sqrt(v.x*v.x+v.y*v.y+v.z*v.z));
 }
 //==============================================================================
 /// Returns length of vector.
 //==============================================================================
-double Length(const tdouble3 &v){
+double Length(const tdouble3& v){
  return(sqrt(v.x*v.x+v.y*v.y+v.z*v.z));
 }
 
@@ -1727,7 +2144,8 @@ double Length(const tdouble3 &v){
 /// Returns if float value is + or - infinity.
 //==============================================================================
 bool IsInfinity(float v){
- return(std::numeric_limits<float>::has_infinity && (v==std::numeric_limits<float>::infinity() || v==-std::numeric_limits<float>::infinity()));
+ return(std::numeric_limits<float>::has_infinity
+   && (v==std::numeric_limits<float>::infinity() || v==-std::numeric_limits<float>::infinity()));
  //return(v > FLT_MAX || v < -FLT_MAX); //-Otra opcion mas sencilla.
 }
 
@@ -1735,7 +2153,8 @@ bool IsInfinity(float v){
 /// Returns if double value is + or - infinity.
 //==============================================================================
 bool IsInfinity(double v){
- return(std::numeric_limits<float>::has_infinity && (v==std::numeric_limits<float>::infinity() || v==-std::numeric_limits<float>::infinity()));
+ return(std::numeric_limits<float>::has_infinity
+   && (v==std::numeric_limits<float>::infinity() || v==-std::numeric_limits<float>::infinity()));
  //return(v > DBL_MAX || v < -DBL_MAX); //-Otra opcion mas sencilla.
 }
 
@@ -1798,18 +2217,33 @@ bool IsLtEqual(double v1,double v2,double tolerance){
 //==============================================================================
 /// Returns v1 is equal to v2 according a tolerance value.
 //==============================================================================
-bool IsEqual(const tdouble3 &v1,const tdouble3 &v2,double tolerance){
-  return(IsEqual(v1.x,v2.x,tolerance) && IsEqual(v1.y,v2.y,tolerance) && IsEqual(v1.z,v2.z,tolerance));
+bool IsEqual(const tfloat3& v1,const tfloat3& v2,float tolerance){
+  return(IsEqual(v1.x,v2.x,tolerance) && IsEqual(v1.y,v2.y,tolerance)
+    && IsEqual(v1.z,v2.z,tolerance));
 }
 
 //==============================================================================
 /// Returns v1 is equal to v2 according a tolerance value.
 //==============================================================================
-bool IsEqual(const tdouble4 &v1,const tdouble4 &v2,double tolerance){
-  return(IsEqual(v1.x,v2.x,tolerance) && IsEqual(v1.y,v2.y,tolerance) && IsEqual(v1.z,v2.z,tolerance) && IsEqual(v1.w,v2.w,tolerance));
+bool IsEqual(const tdouble3& v1,const tdouble3& v2,double tolerance){
+  return(IsEqual(v1.x,v2.x,tolerance) && IsEqual(v1.y,v2.y,tolerance)
+    && IsEqual(v1.z,v2.z,tolerance));
 }
 
-
+//==============================================================================
+/// Returns v1 is equal to v2 according a tolerance value.
+//==============================================================================
+bool IsEqual(const tdouble4& v1,const tdouble4& v2,double tolerance){
+  return(IsEqual(v1.x,v2.x,tolerance) && IsEqual(v1.y,v2.y,tolerance)
+    && IsEqual(v1.z,v2.z,tolerance) && IsEqual(v1.w,v2.w,tolerance));
 }
 
+//==============================================================================
+/// Returns v with its elements in absolute value
+//==============================================================================
+tdouble3 Double3ToAbs(const tdouble3 v){
+	return TDouble3(std::abs(v.x),std::abs(v.y),std::abs(v.z));
+}
+
+}
 

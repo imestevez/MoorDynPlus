@@ -1,40 +1,41 @@
 /*===================================================================================
-<MOORDYN+> Copyright (c) 2020
+<MOORDYNPLUS> Copyright (c) 2025 by Ivan Martinez-Estevez
+
 Ivan Martinez Estevez and Jose M. Dominguez (Universidade de Vigo, Spain)
 Matt Hall (github.com/mattEhall)
 
-This file is part of MoorDyn+.  MoorDyn+ is free software: you can redistribute
-it and/or modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation, either version 3 of the License,
-or (at your option) any later version.
+This file is part of MoorDynPlus. MoorDynPlus is free software: you can 
+redistribute it and/or modify it under the terms of the GNU General Public 
+License as published by the Free Software Foundation, either version 3 of 
+the License, or (at your option) any later version.
 
-Linking the MoorDyn+ library statically or dynamically with other modules is
+Linking the MoorDynPlus library statically or dynamically with other modules is
 making a combined work based on this library. Thus, the terms and conditions
 of the GNU General Public License cover the whole combination. As a special
-exception, the copyright holders of MoorDyn+ give you permission to dynamically
+exception, the copyright holders of MoorDynPlus give you permission to dynamically
 link this library with the program DualSPHysics to produce a combined model
-featuring the capabilities of both DualSPHysics and MoorDyn+. This exception
-is strictly limited to linking between the compiled MoorDyn+ library and
-DualSPHysics. It does not extend to other programs or the use of the MoorDyn+
+featuring the capabilities of both DualSPHysics and MoorDynPlus. This exception
+is strictly limited to linking between the compiled MoorDynPlus library and
+DualSPHysics. It does not extend to other programs or the use of the MoorDynPlus
 source code beyond the stipulations of the GPL. When the exception is used,
 this paragraph must be included in the copyright notice.
 
-MoorDyn+ is distributed in the hope that it will be useful, but WITHOUT ANY
+MoorDynPlus is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE. See the GNU General Public License for details.
 
 You should have received a copy of the GNU General Public License along with
-MoorDyn+. If not, see <http://www.gnu.org/licenses/>.
+MoorDynPlus. If not, see <http://www.gnu.org/licenses/>.
 ===================================================================================*/
 
 #include "Misc.h"
-#include "TypesMoorDyn.h"
+#include "TypesMoorDynPlus.h"
 
 namespace misc{
 //======================================================================
 /// simple convenience function for identity matrix
 //======================================================================
-double eye(int I, int J) {
+double eye(int I,int J) {
   if(I == J) { return 1.0; }
   else { return 0.0; }
 }
@@ -42,7 +43,7 @@ double eye(int I, int J) {
 //======================================================================
 /// Returns unit vector (u) in direction from r1 to r2
 //======================================================================
-void unitvector(std::vector<double> & u, std::vector<double> & r1, std::vector<double> & r2) {
+void unitvector(std::vector<double> &u,std::vector<double> & r1,std::vector<double> & r2) {
   double length_squared=0.0;
 
   for(int J=0; J<3; J++) { length_squared+=(r2[J]-r1[J])*(r2[J]-r1[J]); }
@@ -55,9 +56,19 @@ void unitvector(std::vector<double> & u, std::vector<double> & r1, std::vector<d
 }
 
 //======================================================================
+/// Returns unit vector (u) in direction from r1 to r2
+//======================================================================
+void unitvector(tdouble3& u,tdouble3& r1,tdouble3& r2) {
+  const tdouble3 length_squared=(r2-r1)*(r2-r1);
+  double length=sqrt(length_squared.x+length_squared.y+length_squared.z);
+  u=(r2-r1)/length; // write to unit vector
+  return;
+}
+
+//======================================================================
 /// Computes the inverse of a matrix m
 //======================================================================
-void inverse3by3(std::vector<std::vector<double>> & minv, std::vector<std::vector<double>> & m) {
+void inverse3by3(std::vector<std::vector<double>> & minv,std::vector<std::vector<double>> & m) {
   // computes the inverse of a matrix m
   double det=m[0][0]*(m[1][1]*m[2][2]-m[2][1]*m[1][2]) -
     m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) +
@@ -80,53 +91,53 @@ void inverse3by3(std::vector<std::vector<double>> & minv, std::vector<std::vecto
 //======================================================================
 /// Creates rotation matrix  (row major order?)
 //======================================================================
-void RotMat(double x2, double x1, double x3, double TransMat[]) {
+void RotMat(double x2,double x1,double x3,tmatrix3d& transMat) {
   // note above swapping of x1 and x2 to deal with weird coordinate system from FAST convention
-  // ( x2 is roll, x1 is pitch, x3 is yaw )
+  // ( x2 is roll,x1 is pitch,x3 is yaw )
 
-  float s1=(float)sin(x1);
-  float c1=(float)cos(x1);
-  float s2=(float)sin(x2);
-  float c2=(float)cos(x2);
-  float s3=(float)sin(x3);
-  float c3=(float)cos(x3);
+  const float s1=float(sin(x1));
+  const float c1=float(cos(x1));
+  const float s2=float(sin(x2));
+  const float c2=float(cos(x2));
+  const float s3=float(sin(x3));
+  const float c3=float(cos(x3));
 
   //rmat=transpose([ 1 0 0; 0 c1 -s1; 0 s1 c1]*[c2 0 s2; 0 1 0; -s2 0 c2]*[c3 s3 0; -s3 c3 0; 0 0 1]);
   //rmat=[1 rz -ry; -rz 1 rx; ry -rx 1];   % rotation matrix
 
-  TransMat[0]=c1*c3 + s1*s2*s3;
-  TransMat[1]=c3*s1*s2-c1*s3;
-  TransMat[2]=c2*s1;
-  TransMat[3]=c2*s3;
-  TransMat[4]=c2*c3;
-  TransMat[5]=-s2;
-  TransMat[6]=c1*s2*s3-c3*s1;
-  TransMat[7]=s1*s3 + c1*c3*s2;
-  TransMat[8]=c1*c2;
-
+  transMat.a11=c1*c3 + s1*s2*s3;
+  transMat.a12=c3*s1*s2-c1*s3;
+  transMat.a13=c2*s1;
+  transMat.a21=c2*s3;
+  transMat.a22=c2*c3;
+  transMat.a23=-s2;
+  transMat.a31=c1*s2*s3-c3*s1;
+  transMat.a32=s1*s3 + c1*c3*s2;
+  transMat.a33=c1*c2;
 }
 
 //======================================================================
 /// Computes dot product and returns it
 //======================================================================
-double dotprod(std::vector<double>& A, std::vector<double>& B) {
+double dotprod(std::vector<double>& A,std::vector<double>& B) {
   double ans=0.;
-  for(int i=0; i<A.size(); i++) ans+=A[i]*B[i];
-  return ans;
-}
-//======================================================================
-/// Computes dot product and returns it
-//======================================================================
-double dotprod(double A[], std::vector<double>& B) {
-  double ans=0.;
-  for(int i=0; i<B.size(); i++) ans+=A[i]*B[i];
+  for(int i=0; i<static_cast<int>(A.size()); i++) ans+=A[i]*B[i];
   return ans;
 }
 
 //======================================================================
-/// Calculate wave number from frequency, g, and depth (credit: FAST source)
+/// Computes dot product and returns it
 //======================================================================
-float WaveNumber(float Omega, float g, float h) {
+double dotprod(double A[],std::vector<double>& B) {
+  double ans=0.;
+  for(int i=0; i<static_cast<int>(B.size()); i++) ans+=A[i]*B[i];
+  return ans;
+}
+
+//======================================================================
+/// Calculate wave number from frequency,g,and depth (credit: FAST source)
+//======================================================================
+float WaveNumber(float Omega,float g,float h) {
   // 
   // This FUNCTION solves the finite depth dispersion relationship:
   // 
@@ -144,7 +155,7 @@ float WaveNumber(float Omega, float g, float h) {
   // Compute the wavenumber, unless Omega is zero, in which case, return
   //   zero:
   // 
-  float k, X0;
+  float k,X0;
 
   if(Omega == 0.0) {   // When .TRUE., the formulation below is ill-conditioned; thus, the known value of zero is returned.
     k=0.0;
@@ -157,7 +168,7 @@ float WaveNumber(float Omega, float g, float h) {
     // Find X0:
     if(C <= 2.0) { X0=sqrt(C)*(1.0f + C*(0.169f + (0.031f*C))); }
     else {
-      float E2=(float)exp(-2.0*C);
+      float E2=float(exp(-2.0*C));
       X0=C*(1.0f + (E2*(2.0f-(12.0f*E2))));
     }
 
@@ -180,7 +191,7 @@ float WaveNumber(float Omega, float g, float h) {
 //======================================================================
 /// Compute the JONSWAP wave spectrum
 //======================================================================
-float JONSWAP(float Omega, float Hs, float Tp, float Gamma) {
+float JONSWAP(float Omega,float Hs,float Tp,float Gamma) {
 
   // This FUNCTION computes the JOint North Sea WAve Project
   // (JONSWAP) representation of the one-sided power spectral density
@@ -209,26 +220,26 @@ float JONSWAP(float Omega, float Hs, float Tp, float Gamma) {
   if(Omega == 0.0) { return 0.0; }  // When .TRUE., the formulation below is ill-conditioned; thus, the known value of zero is returned.
   else {  // Omega > 0.0; forumulate the JONSWAP spectrum.
     // Compute the wave frequency and peak spectral frequency in Hz:
-    f=(float) 1.f/2.f/(float)PI*Omega;
+    f=float(1.f/2.f/float(PI*Omega));
     fp=1.f/Tp;
-    fpOvrf4=pow((fp/f), 4.0f);
+    fpOvrf4=pow((fp/f),4.0f);
 
     // Compute the normalising factor:
     C=1.0f-(0.287f*log(Gamma));
 
     // Compute Alpha:
-    if(f <= fp) { Sigma=(float)0.07; }
-    else { Sigma=(float)0.09; }
+    if(f <= fp) { Sigma=float(0.07); }
+    else { Sigma=float(0.09); }
     Alpha=exp((-0.5f *(((f/fp)-1.0f)/Sigma)*(((f/fp)-1.0f)/Sigma)));
     // Compute the wave spectrum:
-    return  1.f/2.f/(float)PI *C*(0.3125f*Hs*Hs*fpOvrf4/f)*exp((-1.25f*fpOvrf4))*(pow(Gamma, Alpha));
+    return (1.f/2.f/float(PI)*C*(0.3125f*Hs*Hs*fpOvrf4/f)*exp((-1.25f*fpOvrf4))*(pow(Gamma,Alpha)));
   }
 }
 
 //======================================================================
 /// Compute the hyperbolic numerator over denominator
 //======================================================================
-float SINHNumOvrSIHNDen(float k, float h, float z) {
+float SINHNumOvrSIHNDen(float k,float h,float z) {
   //bjj: note, MLB had issues with the IVF 12 compiler inline function expansion
   // and causing "unexpected results" (NaN) here. possible error in optimazations.
   //MLB: I turned off in-line function expansion to eliminate the NaN issue with the COSH/SUNH
@@ -254,7 +265,7 @@ float SINHNumOvrSIHNDen(float k, float h, float z) {
 //======================================================================
 /// Compute the hyperbolic numerator over denominator
 //======================================================================
-float COSHNumOvrSIHNDen(float k, float h, float z) {
+float COSHNumOvrSIHNDen(float k,float h,float z) {
   // This FUNCTION computes the shallow water hyperbolic numerator
   // over denominator term in the wave kinematics expressions:
   //
@@ -280,7 +291,7 @@ float COSHNumOvrSIHNDen(float k, float h, float z) {
 //======================================================================
 /// Flip or reverse function
 //======================================================================
-void reverse(double* data, int datasize) {
+void reverse(double* data,int datasize) {
   int i;
   double temp;
   for(i=0; i<floor(datasize/2); i++) {
@@ -294,10 +305,10 @@ void reverse(double* data, int datasize) {
 //======================================================================
 /// IIR filter function
 //======================================================================
-void doIIR(double* in, double* out, int dataSize, double* a, double* b, int kernelSize) {
+void doIIR(double* in,double* out,int dataSize,double* a,double* b,int kernelSize) {
 
   // kernelSize is size of vectors a and b, which contain the coefficients.  Normally a[0]=1.
-  int i, k;
+  int i,k;
   // filtering from out[0] to out[kernelSize-2]
   for(i=0; i<kernelSize-1; ++i) {
     out[i]=in[kernelSize-1];          // maybe this hack will work...
@@ -319,10 +330,10 @@ void doIIR(double* in, double* out, int dataSize, double* a, double* b, int kern
 //======================================================================
 /// State Space filter function-a good reference is https://ccrma.stanford.edu/~jos/fp/Converting_State_Space_Form_Hand.html
 //=====================================================================
-void doSSfilter(double* in, double* out, int dataSize, double* a, double* beta, double b0, int kernelSize) {
-  // kernelSize is size of vectors a and beta (exluding 0th entry!), which contain the coefficients.
+void doSSfilter(double* in,double* out,int dataSize,double* a,double* beta,double b0,int kernelSize) {
+  // kernelSize is size of vectors a and beta (excluding 0th entry!),which contain the coefficients.
 
-  int i, k;
+  int i,k;
   double* fstates=(double*)malloc(dataSize*sizeof(double)); // create state vector
 
   // filtering from out[0] to out[kernelSize-2]
@@ -342,4 +353,4 @@ void doSSfilter(double* in, double* out, int dataSize, double* a, double* beta, 
   free(fstates);
   return;
 }
-}; //end misc
+} //end misc
